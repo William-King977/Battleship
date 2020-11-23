@@ -3,6 +3,7 @@
 using namespace std;
 
 int main(void) {
+    // __cplusplus;
     Battleship myShip;
     myShip.startGame();
     myShip.showBoard();

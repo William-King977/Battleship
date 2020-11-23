@@ -1,13 +1,7 @@
 #include "battleship.hpp"
 #include <iostream>
-#include <string>
-#include <vector>
-// Both neeeded for random numbers.
 #include <cstdlib>
 #include <ctime>
-
-using namespace std;
-enum direction {UP, DOWN, LEFT, RIGHT};
 
 Battleship::Battleship() {
     // cout << "Battleship object made." << endl;
@@ -35,9 +29,8 @@ void Battleship::startGame() {
     this->placeShips(emptySpace);
 }
 
-// Places the ships on the board.
+// Places the ships randomly on the board.
 void Battleship::placeShips(char emptySpace) {
-    // Place the ships (randomly).
     srand(time(NULL));
 
     for (int i = 5; i > 0; i--) {
@@ -50,7 +43,7 @@ void Battleship::placeShips(char emptySpace) {
             continue;
         }
 
-        // Set the ship type (using Hasbro 2002 version).
+        // Set the ship type (using ships from Hasbro 2002 version).
         char shipType;
         int shipLength = i;
         switch (i) {
@@ -74,42 +67,7 @@ void Battleship::placeShips(char emptySpace) {
         }
 
         // Stores the possible placements in the co-ordinate.
-        vector<direction> validDir;
-        bool upValid = true;
-        bool downValid = true;
-        bool leftValid = true;
-        bool rightValid = true;
-
-        for (int j = 0; j < shipLength; j++) {
-            // UP
-            if ((y - shipLength < 0) || p1Board[y - j][x] != emptySpace)
-                upValid = false;
-
-            // DOWN
-            if ((y + shipLength > 9) || p1Board[y + j][x] != emptySpace)
-                downValid = false;
-
-            // LEFT
-            if ((x - shipLength < 0) || p1Board[y][x - j] != emptySpace)
-                leftValid = false;
-
-            // RIGHT
-            if ((x + shipLength > 9) || p1Board[y][x + j] != emptySpace)
-                rightValid = false;
-
-            // Exit early if placement is impossible. CHECK!
-            if (!upValid && !downValid && !leftValid && !rightValid)
-                break;
-        }
-
-        if (upValid)
-            validDir.push_back(UP);
-        if (downValid)
-            validDir.push_back(DOWN);
-        if (leftValid)
-            validDir.push_back(LEFT);
-        if (rightValid)
-            validDir.push_back(RIGHT);
+        vector<direction> validDir = getDirections(x, y, emptySpace, shipLength);
         
         // If it's impossible to place the (whole) ship.
         if (validDir.size() == 0) {
@@ -120,6 +78,8 @@ void Battleship::placeShips(char emptySpace) {
         // Randomly choose the possible direction.
         int dirIndex = rand() % validDir.size();
         direction placeDir = validDir[dirIndex];
+
+        // Clear up the vector.
         validDir.clear();
         validDir.shrink_to_fit();
 
@@ -142,6 +102,48 @@ void Battleship::placeShips(char emptySpace) {
                 break;
         }
     }
+}
+
+// Gets the valid placement directions for a ship.
+vector<direction> Battleship::getDirections(int x, int y, char emptySpace, int shipLength) {
+    vector<direction> validDir;
+    bool upValid = true;
+    bool downValid = true;
+    bool leftValid = true;
+    bool rightValid = true;
+
+    for (int j = 0; j < shipLength; j++) {
+        // UP
+        if ((y - shipLength < 0) || p1Board[y - j][x] != emptySpace)
+            upValid = false;
+
+        // DOWN
+        if ((y + shipLength > 9) || p1Board[y + j][x] != emptySpace)
+            downValid = false;
+
+        // LEFT
+        if ((x - shipLength < 0) || p1Board[y][x - j] != emptySpace)
+            leftValid = false;
+
+        // RIGHT
+        if ((x + shipLength > 9) || p1Board[y][x + j] != emptySpace)
+            rightValid = false;
+
+        // Exit early if placement is impossible.
+        if (!upValid && !downValid && !leftValid && !rightValid)
+            break;
+    }
+
+    if (upValid)
+        validDir.push_back(UP);
+    if (downValid)
+        validDir.push_back(DOWN);
+    if (leftValid)
+        validDir.push_back(LEFT);
+    if (rightValid)
+        validDir.push_back(RIGHT);
+
+    return validDir;
 }
 
 // Show the current contents of the board.
