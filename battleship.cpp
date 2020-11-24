@@ -1,5 +1,6 @@
 #include "battleship.hpp"
 #include <iostream>
+#include <sstream>
 #include <cstdlib>
 #include <ctime>
 
@@ -22,6 +23,7 @@ void Battleship::startGame() {
 
     p1ShipCount = 5;
     p2ShipCount = 5;
+    isFinished = false;
 
     for (int i = 0; i < 10; i++) {
         p1Board[i] = new char[10];
@@ -161,8 +163,37 @@ vector<direction> Battleship::getDirections(int x, int y, char emptySpace, int s
     return validDir;
 }
 
-void Battleship::shoot(char x, int y) {
+// Takes the player's co-ordinates to perform their turn.
+void Battleship::shoot(char charX, string strY) {
+    // NOTE: co-ordinates are entered in format A0 or A00.
+    int x = charX - 'A';
+    int y;
 
+    stringstream ssY(strY);
+    ssY >> y;
+    y--;
+
+    // Check what was hit.
+    switch (p2Board[y][x]) {
+        // If a ship is hit.
+        case 'C':
+        case 'B':
+        case 'D':
+        case 'S':
+        case 'P':
+            p2Board[y][x] = 'X';
+            break;
+        case '~':
+            p2Board[y][x] = 'O';
+            break;
+        default:
+            // The position was already hit.
+    }
+}
+
+// Checks if the game is over or not.
+bool Battleship::isGameFinished() {
+    return isFinished;
 }
 
 // Show the current contents of the boards.
@@ -184,22 +215,28 @@ void Battleship::showBoard() {
         // Print line of the second board.
         for (int j = 0; j < 10; j++) {
             // Hide the opponents ships.
-            if (p2Board[i][j] != '~' || p2Board[i][j] != 'O' || p2Board[i][j] != 'X') {
-                if (j == 0 && i == 9) {
-                    cout << " | " << i + 1 << " | ~ ";
-                } else if (j == 0) {
-                    cout << " |  " << i + 1 << " | ~ ";
-                } else {
-                    cout << "~ ";
-                }
-            } else {
-                if (j == 0 && i == 9) {
-                    cout << " | " << i + 1 << " | " << p2Board[i][j] << ' ';
-                } else if (j == 0) {
-                    cout << " |  " << i + 1 << " | " << p2Board[i][j] << ' ';
-                } else {
-                    cout << p2Board[i][j] << ' ';
-                }
+            switch (p2Board[i][j]) {
+                case 'C':
+                case 'B':
+                case 'D':
+                case 'S':
+                case 'P':
+                    if (j == 0 && i == 9) {
+                        cout << " | " << i + 1 << " | ~ ";
+                    } else if (j == 0) {
+                        cout << " |  " << i + 1 << " | ~ ";
+                    } else {
+                        cout << "~ ";
+                    }
+                    break;
+               default:
+                    if (j == 0 && i == 9) {
+                        cout << " | " << i + 1 << " | " << p2Board[i][j] << ' ';
+                    } else if (j == 0) {
+                        cout << " |  " << i + 1 << " | " << p2Board[i][j] << ' ';
+                    } else {
+                        cout << p2Board[i][j] << ' ';
+                    }
             }
         }
         cout << endl;

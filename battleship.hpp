@@ -19,14 +19,16 @@ class Battleship {
         ~Battleship();
         void startGame();
         void showBoard();
-        void shoot(char x, int y);
+        void shoot(char charX, string strY);
+        bool isGameFinished();
     private:
         char** p1Board;
-        char** p2Board; // Needs to be set.
+        char** p2Board;
         vector<Ship> p1Ships;
         vector<Ship> p2Ships;
         int p1ShipCount;
         int p2ShipCount;
+        bool isFinished;
         void placeShips(char** &board, vector<Ship> &ships, char emptySpace);
         vector<direction> getDirections(int x, int y, char emptySpace, int shipLength, char** board);
 };
