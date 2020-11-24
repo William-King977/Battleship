@@ -24,6 +24,7 @@ int main(void) {
                 break;
             case 2:
                 y = xy.substr(1,1);
+                break;
             default:
                 // Must be dealt with.
                 cout << "Error" << endl;

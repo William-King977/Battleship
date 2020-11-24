@@ -168,6 +168,8 @@ void Battleship::shoot(char charX, string strY) {
     // NOTE: co-ordinates are entered in format A0 or A00.
     int x = charX - 'A';
     int y;
+    bool shipHit = false;
+    char shipType;
 
     stringstream ssY(strY);
     ssY >> y;
@@ -181,14 +183,44 @@ void Battleship::shoot(char charX, string strY) {
         case 'D':
         case 'S':
         case 'P':
+            shipHit = true;
+            shipType = p2Board[y][x];
             p2Board[y][x] = 'X';
+            cout << "You hit an enemy ship." << endl;
             break;
         case '~':
             p2Board[y][x] = 'O';
             break;
         default:
             // The position was already hit.
+            cout << "You hit this position already" << endl;
     }
+
+    // If a ship was hit.
+    if (shipHit) {
+        // Check which ship it was.
+        for (int i = 0; i < 5; i++) {
+            if (p2Ships[i].codeName == shipType) {
+                p2Ships[i].health--;
+                // If the resulting hit sunk the ship.
+                if (p2Ships[i].health == 0) {
+                    cout << "You sunk the enemy's " << p2Ships[i].fullName << '.' << endl;
+                    p2ShipCount--;
+                }
+                break;
+            }
+        }
+    }
+
+    // If all the ships have sunk.
+    if (p2ShipCount == 0) {
+        isFinished = true;
+        this->showBoard();
+        cout << "Congratulations! You have sunk all the enemy ships." << endl;
+        return;
+    }
+
+    // Perform opponent's turn.
 }
 
 // Checks if the game is over or not.
@@ -198,6 +230,7 @@ bool Battleship::isGameFinished() {
 
 // Show the current contents of the boards.
 void Battleship::showBoard() {
+    cout << endl;
     cout << "         Your Board       |" << "      A B C D E F G H I J" << endl;
     cout << "   ---------------------  |" << "    ---------------------" << endl;
     for (int i = 0; i < 10; i++) {
