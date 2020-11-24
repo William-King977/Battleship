@@ -1,6 +1,6 @@
 #include "battleship.hpp"
 #include <iostream>
-#include <sstream>
+#include <exception>
 #include <cstdlib>
 #include <ctime>
 
@@ -11,8 +11,10 @@ Battleship::Battleship() {
 Battleship::~Battleship() {
     for (int i = 0; i < 10; i++) {
         delete[] p1Board[i];
+        delete[] p2Board[i];
     }
     delete[] p1Board;
+    delete[] p2Board;
 }
 
 // Initialises the game components and fills the board.
@@ -164,16 +166,12 @@ vector<direction> Battleship::getDirections(int x, int y, char emptySpace, int s
 }
 
 // Takes the player's co-ordinates to perform their turn.
-void Battleship::shoot(char charX, string strY) {
-    // NOTE: co-ordinates are entered in format A0 or A00.
+void Battleship::shoot(char charX, int y) {
     int x = charX - 'A';
-    int y;
+    y--; // Decrement y for index use.
+
     bool shipHit = false;
     char shipType;
-
-    stringstream ssY(strY);
-    ssY >> y;
-    y--;
 
     // Check what was hit.
     switch (p2Board[y][x]) {
@@ -186,25 +184,26 @@ void Battleship::shoot(char charX, string strY) {
             shipHit = true;
             shipType = p2Board[y][x];
             p2Board[y][x] = 'X';
-            cout << "You hit an enemy ship." << endl;
+            cout << "You've hit an enemy ship." << endl;
             break;
         case '~':
             p2Board[y][x] = 'O';
+            cout << "Nothing was hit." << endl;
             break;
         default:
             // The position was already hit.
-            cout << "You hit this position already" << endl;
+            throw logic_error("You've hit this position already.");
     }
 
     // If a ship was hit.
     if (shipHit) {
         // Check which ship it was.
-        for (int i = 0; i < 5; i++) {
-            if (p2Ships[i].codeName == shipType) {
-                p2Ships[i].health--;
+        for (int j = 0; j < 5; j++) {
+            if (p2Ships[j].codeName == shipType) {
+                p2Ships[j].health--;
                 // If the resulting hit sunk the ship.
-                if (p2Ships[i].health == 0) {
-                    cout << "You sunk the enemy's " << p2Ships[i].fullName << '.' << endl;
+                if (p2Ships[j].health == 0) {
+                    cout << "You've sunk the enemy's " << p2Ships[j].fullName << '.' << endl;
                     p2ShipCount--;
                 }
                 break;

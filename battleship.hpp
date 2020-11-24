@@ -19,7 +19,7 @@ class Battleship {
         ~Battleship();
         void startGame();
         void showBoard();
-        void shoot(char charX, string strY);
+        void shoot(char charX, int y);
         bool isGameFinished();
     private:
         char** p1Board;
