@@ -4,6 +4,9 @@
 #include <cstdlib>
 #include <ctime>
 
+// Empty space character on the board.
+const char emptySpace = '-';
+
 Battleship::Battleship() {
     // cout << "Battleship object made." << endl;
 }
@@ -19,7 +22,6 @@ Battleship::~Battleship() {
 
 // Initialises the game components and fills the board.
 void Battleship::startGame() {
-    char emptySpace = '~';
     p1Board = new char* [10];
     p2Board = new char* [10];
 
@@ -38,12 +40,12 @@ void Battleship::startGame() {
 
     // Placing the seed here ensures that both board are random.
     srand(time(NULL));
-    placeShips(p1Board, p1Ships, emptySpace);
-    placeShips(p2Board, p2Ships, emptySpace);
+    placeShips(p1Board, p1Ships);
+    placeShips(p2Board, p2Ships);
 }
 
 // Places the ships randomly on the board.
-void Battleship::placeShips(char** &board, vector<Ship> &ships, char emptySpace) {
+void Battleship::placeShips(char** &board, vector<Ship> &ships) {
     for (int i = 5; i > 0; i--) {
         int x = rand() % 10;
         int y = rand() % 10;
@@ -86,7 +88,7 @@ void Battleship::placeShips(char** &board, vector<Ship> &ships, char emptySpace)
         ships.push_back(newShip);
 
         // Stores the possible placements in the co-ordinate.
-        vector<direction> validDir = getDirections(x, y, emptySpace, shipLength, board);
+        vector<direction> validDir = getDirections(x, y, shipLength, board);
         
         // If it's impossible to place the (whole) ship.
         if (validDir.size() == 0) {
@@ -124,7 +126,7 @@ void Battleship::placeShips(char** &board, vector<Ship> &ships, char emptySpace)
 }
 
 // Gets the valid placement directions for a ship.
-vector<direction> Battleship::getDirections(int x, int y, char emptySpace, int shipLength, char** board) {
+vector<direction> Battleship::getDirections(int x, int y, int shipLength, char** board) {
     vector<direction> validDir;
     bool upValid = true;
     bool downValid = true;
@@ -186,7 +188,7 @@ void Battleship::shoot(char charX, int y) {
             p2Board[y][x] = 'X';
             cout << "You've hit an enemy ship." << endl;
             break;
-        case '~':
+        case emptySpace:
             p2Board[y][x] = 'O';
             cout << "Nothing was hit." << endl;
             break;
@@ -254,11 +256,11 @@ void Battleship::showBoard() {
                 case 'S':
                 case 'P':
                     if (j == 0 && i == 9) {
-                        cout << " | " << i + 1 << " | ~ ";
+                        cout << " | " << i + 1 << " | " << emptySpace << ' ';
                     } else if (j == 0) {
-                        cout << " |  " << i + 1 << " | ~ ";
+                        cout << " |  " << i + 1 << " | " << emptySpace << ' ';
                     } else {
-                        cout << "~ ";
+                        cout << emptySpace << ' ';
                     }
                     break;
                default:

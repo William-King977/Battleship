@@ -29,8 +29,8 @@ class Battleship {
         int p1ShipCount;
         int p2ShipCount;
         bool isFinished;
-        void placeShips(char** &board, vector<Ship> &ships, char emptySpace);
-        vector<direction> getDirections(int x, int y, char emptySpace, int shipLength, char** board);
+        void placeShips(char** &board, vector<Ship> &ships);
+        vector<direction> getDirections(int x, int y, int shipLength, char** board);
 };
 
 #endif
