@@ -1,5 +1,5 @@
 # About
-A simple battleship game using text-based representation.
+A battleship game using text-based representation. Based on the guessing game of the same name.
 
 # Notes About The Implementation
 - Everything is coded in Visual Studio Code.
