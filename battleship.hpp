@@ -2,8 +2,16 @@
 #define BATTLESHIP_HPP
 
 #include <vector>
+#include <string>
 using namespace std;
 enum direction {UP, DOWN, LEFT, RIGHT};
+
+// Holds data (and status) of each ship.
+struct Ship {
+    char codeName;
+    string fullName;
+    int health;
+};
 
 class Battleship {
     public:
@@ -11,10 +19,16 @@ class Battleship {
         ~Battleship();
         void startGame();
         void showBoard();
+        void shoot(char x, int y);
     private:
         char** p1Board;
-        void placeShips(char emptySpace);
-        vector<direction> getDirections(int x, int y, char emptySpace, int shipLength);
+        char** p2Board; // Needs to be set.
+        vector<Ship> p1Ships;
+        vector<Ship> p2Ships;
+        int p1ShipCount;
+        int p2ShipCount;
+        void placeShips(char** &board, vector<Ship> &ships, char emptySpace);
+        vector<direction> getDirections(int x, int y, char emptySpace, int shipLength, char** board);
 };
 
 #endif
