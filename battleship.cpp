@@ -219,6 +219,69 @@ void Battleship::shoot(char charX, int y) {
     }
 
     // Perform opponent's turn.
+    cout << endl << "---------------------CPU's Turn---------------------" << endl;
+    this->showBoard();
+    this->enemyShoot();
+}
+
+// Performs the CPU's turn.
+void Battleship::enemyShoot() {
+    int x = rand() % 10;
+    int y = rand() % 10;
+
+    bool shipHit = false;
+    char shipType;
+
+    // Check what was hit.
+    switch (p1Board[y][x]) {
+        // If a ship is hit.
+        case 'C':
+        case 'B':
+        case 'D':
+        case 'S':
+        case 'P':
+            shipHit = true;
+            shipType = p1Board[y][x];
+            p1Board[y][x] = 'X';
+            cout << "Your ship has been hit." << endl;
+            break;
+        case emptySpace:
+            p1Board[y][x] = 'O';
+            cout << "Nothing was hit." << endl;
+            break;
+        default:
+            // The position was already hit.
+            // Recurse the method until a different position is chosen.
+            enemyShoot();
+            return;
+    }
+
+    // Show co-ordinates chosen.
+    cout << "Co-ordinates: " << char(x + 'A') << y + 1 << endl;
+
+    // If a ship was hit.
+    if (shipHit) {
+        // Check which ship it was.
+        for (int j = 0; j < 5; j++) {
+            if (p1Ships[j].codeName == shipType) {
+                p1Ships[j].health--;
+                // If the resulting hit sunk the ship.
+                if (p1Ships[j].health == 0) {
+                    cout << "Your " << p1Ships[j].fullName << " has sunk!" << endl;
+                    p1ShipCount--;
+                }
+                break;
+            }
+        }
+    }
+
+    // If all the ships have sunk.
+    if (p1ShipCount == 0) {
+        isFinished = true;
+        this->showBoard();
+        cout << "All your ships have sunk! The CPU wins." << endl;
+        return;
+    }
 }
 
 // Checks if the game is over or not.
@@ -228,7 +291,6 @@ bool Battleship::isGameFinished() {
 
 // Show the current contents of the boards.
 void Battleship::showBoard() {
-    cout << endl;
     cout << "         Your Board       |" << "      A B C D E F G H I J" << endl;
     cout << "   ---------------------  |" << "    ---------------------" << endl;
     for (int i = 0; i < 10; i++) {

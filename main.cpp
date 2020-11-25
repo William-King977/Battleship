@@ -8,6 +8,7 @@ int main(void) {
     myGame.startGame();
 
     while (!myGame.isGameFinished()) {
+        cout << endl << "----------------------Your Turn---------------------" << endl;
         myGame.showBoard();
 
         string xy;
