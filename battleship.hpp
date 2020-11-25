@@ -2,6 +2,7 @@
 #define BATTLESHIP_HPP
 
 #include <vector>
+#include <queue>
 #include <string>
 using namespace std;
 enum direction {UP, DOWN, LEFT, RIGHT};
@@ -11,6 +12,13 @@ struct Ship {
     char codeName;
     string fullName;
     int health;
+};
+
+// Co-ordinates for possible CPU moves.
+struct Coordinate {
+    int x;
+    int y;
+    Coordinate(int newX, int newY) : x(newX), y(newY) { }
 };
 
 class Battleship {
@@ -34,6 +42,8 @@ class Battleship {
         void placeShips(char** &board, vector<Ship> &ships);
         vector<direction> getDirections(int x, int y, int shipLength, char** board);
         void enemyShoot();
+        void setCpuMoves(int x, int y);
+        queue<Coordinate> cpuMoves;
 };
 
 #endif

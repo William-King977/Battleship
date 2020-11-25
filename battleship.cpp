@@ -15,6 +15,7 @@ Battleship::~Battleship() {
     }
     delete[] p1Board;
     delete[] p2Board;
+    cpuMoves = {};
 }
 
 // Initialises the game components and fills the board.
@@ -226,8 +227,17 @@ void Battleship::shoot(char charX, int y) {
 
 // Performs the CPU's turn.
 void Battleship::enemyShoot() {
-    int x = rand() % 10;
-    int y = rand() % 10;
+    int x;
+    int y;
+
+    if (!cpuMoves.empty()) {
+        x = cpuMoves.front().x;
+        y = cpuMoves.front().y;
+        cpuMoves.pop();
+    } else {
+        x = rand() % 10;
+        y = rand() % 10;
+    }
 
     bool shipHit = false;
     char shipType;
@@ -269,6 +279,9 @@ void Battleship::enemyShoot() {
                 if (p1Ships[j].health == 0) {
                     cout << "Your " << p1Ships[j].fullName << " has sunk!" << endl;
                     p1ShipCount--;
+                // Only add moves if the ship has not sunk.
+                } else {
+                    setCpuMoves(x, y);
                 }
                 break;
             }
@@ -284,6 +297,20 @@ void Battleship::enemyShoot() {
     }
 }
 
+// Sets the possible moves for the CPU after a ship is hit.
+void Battleship::setCpuMoves(int x, int y) {
+    // Up, down, left, right (respectively).
+    // Adds positions around where the ship was hit.
+    if (y > 0)
+        cpuMoves.push(Coordinate(x, y - 1));
+    if (y < 9)
+        cpuMoves.push(Coordinate(x, y + 1));
+    if (x > 0)
+        cpuMoves.push(Coordinate(x - 1, y));
+    if (x < 9)
+        cpuMoves.push(Coordinate(x + 1, y));
+}
+
 // Checks if the game is over or not.
 bool Battleship::isGameFinished() {
     return isFinished;
@@ -291,7 +318,7 @@ bool Battleship::isGameFinished() {
 
 // Show the current contents of the boards.
 void Battleship::showBoard() {
-    cout << "         Your Board       |" << "      A B C D E F G H I J" << endl;
+    cout << " P1  A B C D E F G H I J  |" << " CPU  A B C D E F G H I J" << endl;
     cout << "   ---------------------  |" << "    ---------------------" << endl;
     for (int i = 0; i < 10; i++) {
         // Print line of the first board.
