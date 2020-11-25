@@ -8,6 +8,7 @@ Battleship::Battleship() {
     // cout << "Battleship object made." << endl;
 }
 
+// Deconstructor deletes/clears certain data structures.
 Battleship::~Battleship() {
     for (int i = 0; i < 10; i++) {
         delete[] p1Board[i];
@@ -15,7 +16,10 @@ Battleship::~Battleship() {
     }
     delete[] p1Board;
     delete[] p2Board;
+
     cpuMoves = {};
+    p1Ships.clear();
+    p2Ships.clear();
 }
 
 // Initialises the game components and fills the board.
@@ -43,7 +47,7 @@ void Battleship::startGame() {
 }
 
 // Places the ships randomly on the board.
-void Battleship::placeShips(char** &board, vector<Ship> &ships) {
+void Battleship::placeShips(char** &board, unordered_map<char, Ship> &ships) {
     for (int i = 5; i > 0; i--) {
         int x = rand() % 10;
         int y = rand() % 10;
@@ -55,35 +59,35 @@ void Battleship::placeShips(char** &board, vector<Ship> &ships) {
         }
 
         // Set the ship type (using ships from Hasbro 2002 version)
-        // and adds the ship's data to the vector.
+        // and adds the ship's data to the map.
         char shipType;
         int shipLength = i;
         Ship newShip;
         switch (i) {
             case 5:
                 shipType = 'C';
-                newShip = {shipType, "Carrier", shipLength};
+                newShip = {"Carrier", shipLength};
                 break;
             case 4:
                 shipType = 'B';
-                newShip = {shipType, "Battleship", shipLength};
+                newShip = {"Battleship", shipLength};
                 break;
             case 3:
                 shipType = 'D';
-                newShip = {shipType, "Destroyer", shipLength};
+                newShip = {"Destroyer", shipLength};
                 break;
             case 2:
                 shipType = 'S';
                 shipLength = 3;
-                newShip = {shipType, "Submarine", shipLength};
+                newShip = {"Submarine", shipLength};
                 break;
             case 1:
                 shipType = 'P';
                 shipLength = 2;
-                newShip = {shipType, "Patrol Boat", shipLength};
+                newShip = {"Patrol Boat", shipLength};
                 break;
         }
-        ships.push_back(newShip);
+        ships[shipType] = newShip;
 
         // Stores the possible placements in the co-ordinate.
         vector<direction> validDir = getDirections(x, y, shipLength, board);
@@ -184,7 +188,6 @@ void Battleship::shoot(char charX, int y) {
             shipHit = true;
             shipType = p2Board[y][x];
             p2Board[y][x] = 'X';
-            cout << "You've hit an enemy ship." << endl;
             break;
         case emptySpace:
             p2Board[y][x] = 'O';
@@ -197,17 +200,15 @@ void Battleship::shoot(char charX, int y) {
 
     // If a ship was hit.
     if (shipHit) {
-        // Check which ship it was.
-        for (int j = 0; j < 5; j++) {
-            if (p2Ships[j].codeName == shipType) {
-                p2Ships[j].health--;
-                // If the resulting hit sunk the ship.
-                if (p2Ships[j].health == 0) {
-                    cout << "You've sunk the enemy's " << p2Ships[j].fullName << '.' << endl;
-                    p2ShipCount--;
-                }
-                break;
-            }
+        // Get the ship that was hit.
+        Ship &thatShip = p2Ships[shipType];
+        thatShip.health--;
+        cout << "You've hit the enemy's " << thatShip.fullName << '.' << endl;
+
+        // If the resulting hit sunk the ship.
+        if (thatShip.health == 0) {
+            cout << "You've sunk the enemy's " << thatShip.fullName << '.' << endl;
+            p2ShipCount--;
         }
     }
 
@@ -253,7 +254,6 @@ void Battleship::enemyShoot() {
             shipHit = true;
             shipType = p1Board[y][x];
             p1Board[y][x] = 'X';
-            cout << "Your ship has been hit." << endl;
             break;
         case emptySpace:
             p1Board[y][x] = 'O';
@@ -271,20 +271,18 @@ void Battleship::enemyShoot() {
 
     // If a ship was hit.
     if (shipHit) {
-        // Check which ship it was.
-        for (int j = 0; j < 5; j++) {
-            if (p1Ships[j].codeName == shipType) {
-                p1Ships[j].health--;
-                // If the resulting hit sunk the ship.
-                if (p1Ships[j].health == 0) {
-                    cout << "Your " << p1Ships[j].fullName << " has sunk!" << endl;
-                    p1ShipCount--;
-                // Only add moves if the ship has not sunk.
-                } else {
-                    setCpuMoves(x, y);
-                }
-                break;
-            }
+        // Get the ship that was hit.
+        Ship &thatShip = p1Ships[shipType];
+        thatShip.health--;
+        cout << "Your " << thatShip.fullName << " has been hit." << endl;
+
+        // If the resulting hit sunk the ship.
+        if (thatShip.health == 0) {
+            cout << "Your " << thatShip.fullName << " has sunk!" << endl;
+            p1ShipCount--;
+        // Only add moves if the ship has not sunk.
+        } else {
+            setCpuMoves(x, y);
         }
     }
 

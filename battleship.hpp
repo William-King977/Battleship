@@ -2,6 +2,7 @@
 #define BATTLESHIP_HPP
 
 #include <vector>
+#include <unordered_map>
 #include <queue>
 #include <string>
 using namespace std;
@@ -9,7 +10,6 @@ enum direction {UP, DOWN, LEFT, RIGHT};
 
 // Holds data (and status) of each ship.
 struct Ship {
-    char codeName;
     string fullName;
     int health;
 };
@@ -34,16 +34,18 @@ class Battleship {
         static const char emptySpace = '-'; 
         char** p1Board;
         char** p2Board;
-        vector<Ship> p1Ships;
-        vector<Ship> p2Ships;
         int p1ShipCount;
         int p2ShipCount;
         bool isFinished;
-        void placeShips(char** &board, vector<Ship> &ships);
+        unordered_map<char, Ship> p1Ships;
+        unordered_map<char, Ship> p2Ships;
+        queue<Coordinate> cpuMoves;
+
+        // Methods.
+        void placeShips(char** &board, unordered_map<char, Ship> &ships);
         vector<direction> getDirections(int x, int y, int shipLength, char** board);
         void enemyShoot();
         void setCpuMoves(int x, int y);
-        queue<Coordinate> cpuMoves;
 };
 
 #endif
