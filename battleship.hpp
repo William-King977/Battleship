@@ -22,6 +22,8 @@ class Battleship {
         void shoot(char charX, int y);
         bool isGameFinished();
     private:
+        // static const'expr' makes it useable in switch, case.
+        static constexpr char emptySpace = '-'; 
         char** p1Board;
         char** p2Board;
         vector<Ship> p1Ships;

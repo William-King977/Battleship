@@ -4,7 +4,6 @@
 using namespace std;
 
 int main(void) {
-    // __cplusplus
     Battleship myGame;
     myGame.startGame();
 
@@ -15,14 +14,10 @@ int main(void) {
         cout << "Enter the co-ordinates (e.g. A1): ";
         getline(cin, xy);
 
-        char x = xy[0];
+        char x;
         string strY;
 
         try {
-            // Check if x is in range.
-            if (x < 'A' || x > 'J')
-                throw logic_error("The x-coordinate is out of range. Enter between A and J.");
-
             // Check the length.
             switch (xy.length()) {
                 case 3:
@@ -34,6 +29,13 @@ int main(void) {
                 default:
                     throw logic_error("Invalid co-ordinate length.");
             }
+            
+            // Set x here (it's possible to input nothing).
+            x = xy[0];
+
+            // Check if x is in range.
+            if (x < 'A' || x > 'J')
+                throw logic_error("The x-coordinate is out of range. Enter between A and J.");
 
             // Check if the y-coordinates are integers.
             for (char letter : strY) {
@@ -50,6 +52,6 @@ int main(void) {
         } catch (logic_error e) {
             cout << "Error: " << e.what() << endl;
         }
-    } 
+    }
     return 0;
 }

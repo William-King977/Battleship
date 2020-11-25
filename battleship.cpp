@@ -4,9 +4,6 @@
 #include <cstdlib>
 #include <ctime>
 
-// Empty space character on the board.
-const char emptySpace = '-';
-
 Battleship::Battleship() {
     // cout << "Battleship object made." << endl;
 }
