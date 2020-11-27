@@ -3,6 +3,7 @@
 #include <exception>
 #include <cstdlib>
 #include <ctime>
+using namespace std;
 
 Battleship::Battleship() {
     // cout << "Battleship object made." << endl;
@@ -30,6 +31,7 @@ void Battleship::startGame() {
     p1ShipCount = 5;
     p2ShipCount = 5;
     isFinished = false;
+    Ship prevShipHit = {"", 0, 0}; // Used for back tracking.
 
     for (int i = 0; i < 10; i++) {
         p1Board[i] = new char[10];
@@ -66,25 +68,25 @@ void Battleship::placeShips(char** &board, unordered_map<char, Ship> &ships) {
         switch (i) {
             case 5:
                 shipType = 'C';
-                newShip = {"Carrier", shipLength};
+                newShip = {"Carrier", shipLength, shipLength};
                 break;
             case 4:
                 shipType = 'B';
-                newShip = {"Battleship", shipLength};
+                newShip = {"Battleship", shipLength, shipLength};
                 break;
             case 3:
                 shipType = 'D';
-                newShip = {"Destroyer", shipLength};
+                newShip = {"Destroyer", shipLength, shipLength};
                 break;
             case 2:
                 shipType = 'S';
                 shipLength = 3;
-                newShip = {"Submarine", shipLength};
+                newShip = {"Submarine", shipLength, shipLength};
                 break;
             case 1:
                 shipType = 'P';
                 shipLength = 2;
-                newShip = {"Patrol Boat", shipLength};
+                newShip = {"Patrol Boat", shipLength, shipLength};
                 break;
         }
         ships[shipType] = newShip;
@@ -203,11 +205,11 @@ void Battleship::shoot(char charX, int y) {
         // Get the ship that was hit.
         Ship &thatShip = p2Ships[shipType];
         thatShip.health--;
-        cout << "You've hit the enemy's " << thatShip.fullName << '.' << endl;
+        cout << "You've hit the enemy's " << thatShip.name << '.' << endl;
 
         // If the resulting hit sunk the ship.
         if (thatShip.health == 0) {
-            cout << "You've sunk the enemy's " << thatShip.fullName << '.' << endl;
+            cout << "You've sunk the enemy's " << thatShip.name << '.' << endl;
             p2ShipCount--;
         }
     }
@@ -222,7 +224,6 @@ void Battleship::shoot(char charX, int y) {
 
     // Perform opponent's turn.
     cout << endl << "---------------------CPU's Turn---------------------" << endl;
-    this->showBoard();
     this->enemyShoot();
 }
 
@@ -232,9 +233,13 @@ void Battleship::enemyShoot() {
     int y;
 
     if (!cpuMoves.empty()) {
-        x = cpuMoves.front().x;
-        y = cpuMoves.front().y;
-        cpuMoves.pop();
+        // Get possible moves for the first ship (could be any
+        // because it's from an unordered map, but it doesn't matter).
+        string shipKey = cpuMoves.begin()->first;
+        queue<Coordinate> &shipMoves = cpuMoves[shipKey];
+        x = shipMoves.front().x;
+        y = shipMoves.front().y;
+        shipMoves.pop();
     } else {
         x = rand() % 10;
         y = rand() % 10;
@@ -258,6 +263,9 @@ void Battleship::enemyShoot() {
         case emptySpace:
             p1Board[y][x] = 'O';
             cout << "Nothing was hit." << endl;
+            setPrevShip();
+            if ((prevShipHit.name.length()) > 0)
+                backTrackShot(x, y);
             break;
         default:
             // The position was already hit.
@@ -274,15 +282,18 @@ void Battleship::enemyShoot() {
         // Get the ship that was hit.
         Ship &thatShip = p1Ships[shipType];
         thatShip.health--;
-        cout << "Your " << thatShip.fullName << " has been hit." << endl;
+        cout << "Your " << thatShip.name << " has been hit." << endl;
 
         // If the resulting hit sunk the ship.
         if (thatShip.health == 0) {
-            cout << "Your " << thatShip.fullName << " has sunk!" << endl;
+            cout << "Your " << thatShip.name << " has sunk!" << endl;
             p1ShipCount--;
+            // Remove ship from the maps.
+            shipPosFound.erase(thatShip.name);
+            cpuMoves.erase(thatShip.name);
         // Only add moves if the ship has not sunk.
         } else {
-            setCpuMoves(x, y);
+            setCpuMoves(x, y, thatShip);
         }
     }
 
@@ -291,22 +302,183 @@ void Battleship::enemyShoot() {
         isFinished = true;
         this->showBoard();
         cout << "All your ships have sunk! The CPU wins." << endl;
-        return;
     }
 }
 
 // Sets the possible moves for the CPU after a ship is hit.
-void Battleship::setCpuMoves(int x, int y) {
-    // Up, down, left, right (respectively).
-    // Adds positions around where the ship was hit.
-    if (y > 0)
-        cpuMoves.push(Coordinate(x, y - 1));
-    if (y < 9)
-        cpuMoves.push(Coordinate(x, y + 1));
-    if (x > 0)
-        cpuMoves.push(Coordinate(x - 1, y));
-    if (x < 9)
-        cpuMoves.push(Coordinate(x + 1, y));
+void Battleship::setCpuMoves(int x, int y, Ship thatShip) {
+    string shipKey = thatShip.name;
+    // If the key (ship) doesn't exist.
+    if (shipPosFound.find(shipKey) == shipPosFound.end()) {
+        // Create hit position queue.
+        queue<Coordinate> hitPos;
+        hitPos.push(Coordinate(x, y));
+        shipPosFound[shipKey] = hitPos;
+
+        // Create possible moves queue.
+        queue<Coordinate> possibleMoves;
+        
+        // Up, down, left, right (respectively).
+        // Adds positions around where the ship was hit.
+        // We don't know where the ship is positioned at this point.
+        if (y > 0)
+            possibleMoves.push(Coordinate(x, y - 1));
+        if (y < 9)
+            possibleMoves.push(Coordinate(x, y + 1));
+        if (x > 0)
+            possibleMoves.push(Coordinate(x - 1, y));
+        if (x < 9)
+            possibleMoves.push(Coordinate(x + 1, y));
+        cpuMoves[shipKey] = possibleMoves;
+
+    // Otherwise, push the coordinates into the existing queues.
+    } else {
+        //Adjust cpuMoves.
+        queue<Coordinate> &currMoves = cpuMoves[shipKey];
+
+        // If the ship wasn't hit previously, then remove the blank moves (for this ship).
+        if (shipPosFound[shipKey].size() == 1)
+            currMoves = {};
+
+        Coordinate prevShipMove = shipPosFound[shipKey].back();
+        prevShipHit = thatShip; // Used if backtracking is needed.
+
+        shipPosFound[shipKey].push(Coordinate(x, y));
+
+        // Used to determine new moves if out-of-bounds.
+        int timesHit = shipPosFound[shipKey].size();
+
+        // If the coordinates found are going Up, down, left, right (respectively)
+        // in respect with the previously hit position.
+        // Only consider ships with length 3 or more (A patrol boat would've been sunk anyway).
+        if (y < prevShipMove.y) {
+            // Continue the direction if it's still in bounds.
+            if (y > 0) {
+                currMoves.push(Coordinate(x, y - 1));
+            } else {
+                // Otherwise, check the ships health and push in the ship's remaining positions.
+                // NOTE: The ship would be shot at least TWICE at this point.
+                switch (prevShipHit.health) {
+                    case 3:
+                        currMoves.push(Coordinate(x, y + (timesHit + 2)));
+                    case 2:
+                        currMoves.push(Coordinate(x, y + (timesHit + 1)));
+                    case 1:
+                        currMoves.push(Coordinate(x, y + timesHit));
+                }
+            }
+        } else if (y > prevShipMove.y) {
+            if (y < 9) {
+                currMoves.push(Coordinate(x, y + 1));
+            } else {
+                switch (prevShipHit.health) {
+                    case 3:
+                        currMoves.push(Coordinate(x, y - (timesHit + 2)));
+                    case 2:
+                        currMoves.push(Coordinate(x, y - (timesHit + 1)));
+                    case 1:
+                        currMoves.push(Coordinate(x, y - timesHit));
+                }
+            }
+        } else if (x < prevShipMove.x) {
+            if (x > 0) {
+                currMoves.push(Coordinate(x - 1, y));
+            } else {
+                switch (prevShipHit.health) {
+                    case 3:
+                        currMoves.push(Coordinate(x + (timesHit + 2), y));
+                    case 2:
+                        currMoves.push(Coordinate(x + (timesHit + 1), y));
+                    case 1:
+                        currMoves.push(Coordinate(x + timesHit, y));
+                }
+            }
+        } else if (x > prevShipMove.x) {
+            if (x < 9) {
+                currMoves.push(Coordinate(x + 1, y));
+            } else {
+                switch (prevShipHit.health) {
+                    case 3:
+                        currMoves.push(Coordinate(x - (timesHit + 2), y));
+                    case 2:
+                        currMoves.push(Coordinate(x - (timesHit + 1), y));
+                    case 1:
+                        currMoves.push(Coordinate(x - timesHit, y));
+                }
+            }
+        }
+    }
+}
+
+// Adjusts the possible moves when missing a shot while trying to sink a ship.
+void Battleship::backTrackShot(int x, int y) {
+    string shipKey = prevShipHit.name;
+    Coordinate prevShipMove = shipPosFound[shipKey].back();
+
+    queue<Coordinate> &currMoves = cpuMoves[shipKey];
+
+    // Used to determine new moves.
+    int timesHit = shipPosFound[shipKey].size();
+
+    // Check direction, then push in remaining moves to sink the ship.
+    // If you went Up, go back Down.
+    if (y < prevShipMove.y) {
+        // Check the ships health and push in the ship's remaining positions.
+        // NOTE: The ship would be shot at least TWICE at this point.
+        switch (prevShipHit.health) {
+            case 3:
+                currMoves.push(Coordinate(x, prevShipMove.y + (timesHit + 2)));
+            case 2:
+                currMoves.push(Coordinate(x, prevShipMove.y + (timesHit + 1)));
+            case 1:
+                currMoves.push(Coordinate(x, prevShipMove.y + timesHit));
+        }
+    // If you went Down, go back Up.
+    } else if (y > prevShipMove.y) {
+        switch (prevShipHit.health) {
+            case 3:
+                currMoves.push(Coordinate(x, prevShipMove.y - (timesHit + 2)));
+            case 2:
+                currMoves.push(Coordinate(x, prevShipMove.y - (timesHit + 1)));
+            case 1:
+                currMoves.push(Coordinate(x, prevShipMove.y - timesHit));
+        }
+    // If you went Left, go Right.  
+    } else if (x < prevShipMove.x) {
+        switch (prevShipHit.health) {
+            case 3:
+                currMoves.push(Coordinate(prevShipMove.x + (timesHit + 2), y));
+            case 2:
+                currMoves.push(Coordinate(prevShipMove.x + (timesHit + 1), y));
+            case 1:
+                currMoves.push(Coordinate(prevShipMove.x + timesHit, y));
+        }
+    // If you went Right, go Left.
+    } else if (x > prevShipMove.x) {
+        switch (prevShipHit.health) {
+            case 3:
+                currMoves.push(Coordinate(prevShipMove.x - (timesHit + 2), y));
+            case 2:
+                currMoves.push(Coordinate(prevShipMove.x - (timesHit + 1), y));
+            case 1:
+                currMoves.push(Coordinate(prevShipMove.x - timesHit, y));
+        }
+    }
+}
+
+// Sets the new previous ship, once a ship has sunk.
+void Battleship::setPrevShip() {
+    for (auto ship : shipPosFound) {
+        queue<Coordinate> currQueue = ship.second;
+        Ship currShip = p1Ships[ship.first[0]]; // First char of the ship name as a key.
+
+        // Find any unsunk ships that were previously hit.
+        if (currQueue.size() < currShip.length) {
+            prevShipHit = currShip;
+            return;
+        }
+    }
+    prevShipHit.name = "";
 }
 
 // Checks if the game is over or not.

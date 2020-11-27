@@ -10,7 +10,8 @@ enum direction {UP, DOWN, LEFT, RIGHT};
 
 // Holds data (and status) of each ship.
 struct Ship {
-    string fullName;
+    string name;
+    int length;
     int health;
 };
 
@@ -37,15 +38,19 @@ class Battleship {
         int p1ShipCount;
         int p2ShipCount;
         bool isFinished;
+        Ship prevShipHit;
         unordered_map<char, Ship> p1Ships;
         unordered_map<char, Ship> p2Ships;
-        queue<Coordinate> cpuMoves;
+        unordered_map<string, queue<Coordinate>> shipPosFound; // Discovered ship positions.
+        unordered_map<string, queue<Coordinate>> cpuMoves; // Moves to shink the ship found.
 
         // Methods.
         void placeShips(char** &board, unordered_map<char, Ship> &ships);
         vector<direction> getDirections(int x, int y, int shipLength, char** board);
         void enemyShoot();
-        void setCpuMoves(int x, int y);
+        void setCpuMoves(int x, int y, Ship thatShip);
+        void backTrackShot(int x, int y);
+        void setPrevShip();
 };
 
 #endif
