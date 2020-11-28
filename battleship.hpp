@@ -50,6 +50,7 @@ class Battleship {
         void enemyShoot();
         void setCpuMoves(int x, int y, Ship thatShip);
         void backTrackShot(int x, int y);
+        void setAltMoves(direction dir, int x, int y, Coordinate prevShipMove);
         void setPrevShip();
 };
 

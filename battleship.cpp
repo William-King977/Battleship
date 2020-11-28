@@ -308,6 +308,7 @@ void Battleship::enemyShoot() {
 // Sets the possible moves for the CPU after a ship is hit.
 void Battleship::setCpuMoves(int x, int y, Ship thatShip) {
     string shipKey = thatShip.name;
+
     // If the key (ship) doesn't exist.
     if (shipPosFound.find(shipKey) == shipPosFound.end()) {
         // Create hit position queue.
@@ -345,66 +346,33 @@ void Battleship::setCpuMoves(int x, int y, Ship thatShip) {
 
         shipPosFound[shipKey].push(Coordinate(x, y));
 
-        // Used to determine new moves if out-of-bounds.
-        int timesHit = shipPosFound[shipKey].size();
-
         // If the coordinates found are going Up, down, left, right (respectively)
         // in respect with the previously hit position.
-        // Only consider ships with length 3 or more (A patrol boat would've been sunk anyway).
         if (y < prevShipMove.y) {
             // Continue the direction if it's still in bounds.
             if (y > 0) {
                 currMoves.push(Coordinate(x, y - 1));
             } else {
-                // Otherwise, check the ships health and push in the ship's remaining positions.
-                // NOTE: The ship would be shot at least TWICE at this point.
-                switch (prevShipHit.health) {
-                    case 3:
-                        currMoves.push(Coordinate(x, y + (timesHit + 2)));
-                    case 2:
-                        currMoves.push(Coordinate(x, y + (timesHit + 1)));
-                    case 1:
-                        currMoves.push(Coordinate(x, y + timesHit));
-                }
+                // Otherwise, set moves to sink the ship.
+                setAltMoves(UP, x, y, prevShipMove);
             }
         } else if (y > prevShipMove.y) {
             if (y < 9) {
                 currMoves.push(Coordinate(x, y + 1));
             } else {
-                switch (prevShipHit.health) {
-                    case 3:
-                        currMoves.push(Coordinate(x, y - (timesHit + 2)));
-                    case 2:
-                        currMoves.push(Coordinate(x, y - (timesHit + 1)));
-                    case 1:
-                        currMoves.push(Coordinate(x, y - timesHit));
-                }
+                setAltMoves(DOWN, x, y, prevShipMove);
             }
         } else if (x < prevShipMove.x) {
             if (x > 0) {
                 currMoves.push(Coordinate(x - 1, y));
             } else {
-                switch (prevShipHit.health) {
-                    case 3:
-                        currMoves.push(Coordinate(x + (timesHit + 2), y));
-                    case 2:
-                        currMoves.push(Coordinate(x + (timesHit + 1), y));
-                    case 1:
-                        currMoves.push(Coordinate(x + timesHit, y));
-                }
+                setAltMoves(LEFT, x, y, prevShipMove);
             }
         } else if (x > prevShipMove.x) {
             if (x < 9) {
                 currMoves.push(Coordinate(x + 1, y));
             } else {
-                switch (prevShipHit.health) {
-                    case 3:
-                        currMoves.push(Coordinate(x - (timesHit + 2), y));
-                    case 2:
-                        currMoves.push(Coordinate(x - (timesHit + 1), y));
-                    case 1:
-                        currMoves.push(Coordinate(x - timesHit, y));
-                }
+                setAltMoves(RIGHT, x, y, prevShipMove);
             }
         }
     }
@@ -415,54 +383,77 @@ void Battleship::backTrackShot(int x, int y) {
     string shipKey = prevShipHit.name;
     Coordinate prevShipMove = shipPosFound[shipKey].back();
 
+    // Used to determine new moves.
+    int timesHit = shipPosFound[shipKey].size();
+
+    // Check direction, then push in remaining moves to sink the ship.
+    if (y < prevShipMove.y) {
+        // Push moves to sink the ship.
+        setAltMoves(UP, x, y, prevShipMove);
+    } else if (y > prevShipMove.y) {
+        setAltMoves(DOWN, x, y, prevShipMove);
+    } else if (x < prevShipMove.x) {
+        setAltMoves(LEFT, x, y, prevShipMove);
+    } else if (x > prevShipMove.x) {
+        setAltMoves(RIGHT, x, y, prevShipMove);
+    }
+}
+
+// Sets the moves to sink a discovered ship.
+void Battleship::setAltMoves(direction dir, int x, int y, Coordinate prevShipMove) {
+    string shipKey = prevShipHit.name;
     queue<Coordinate> &currMoves = cpuMoves[shipKey];
 
     // Used to determine new moves.
     int timesHit = shipPosFound[shipKey].size();
 
-    // Check direction, then push in remaining moves to sink the ship.
-    // If you went Up, go back Down.
-    if (y < prevShipMove.y) {
-        // Check the ships health and push in the ship's remaining positions.
-        // NOTE: The ship would be shot at least TWICE at this point.
-        switch (prevShipHit.health) {
-            case 3:
-                currMoves.push(Coordinate(x, prevShipMove.y + (timesHit + 2)));
-            case 2:
-                currMoves.push(Coordinate(x, prevShipMove.y + (timesHit + 1)));
-            case 1:
-                currMoves.push(Coordinate(x, prevShipMove.y + timesHit));
-        }
-    // If you went Down, go back Up.
-    } else if (y > prevShipMove.y) {
-        switch (prevShipHit.health) {
-            case 3:
-                currMoves.push(Coordinate(x, prevShipMove.y - (timesHit + 2)));
-            case 2:
-                currMoves.push(Coordinate(x, prevShipMove.y - (timesHit + 1)));
-            case 1:
-                currMoves.push(Coordinate(x, prevShipMove.y - timesHit));
-        }
-    // If you went Left, go Right.  
-    } else if (x < prevShipMove.x) {
-        switch (prevShipHit.health) {
-            case 3:
-                currMoves.push(Coordinate(prevShipMove.x + (timesHit + 2), y));
-            case 2:
-                currMoves.push(Coordinate(prevShipMove.x + (timesHit + 1), y));
-            case 1:
-                currMoves.push(Coordinate(prevShipMove.x + timesHit, y));
-        }
-    // If you went Right, go Left.
-    } else if (x > prevShipMove.x) {
-        switch (prevShipHit.health) {
-            case 3:
-                currMoves.push(Coordinate(prevShipMove.x - (timesHit + 2), y));
-            case 2:
-                currMoves.push(Coordinate(prevShipMove.x - (timesHit + 1), y));
-            case 1:
-                currMoves.push(Coordinate(prevShipMove.x - timesHit, y));
-        }
+    // Only consider ships with length 3 or more (A patrol boat would've been sunk anyway).
+    switch (dir) {
+        // If you went Up, go back Down.
+        case UP:
+            // Based on the ship's remaining health (it has been hit at least TWICE).
+            switch (prevShipHit.health) {
+                case 3:
+                    currMoves.push(Coordinate(x, prevShipMove.y + (timesHit + 2)));
+                case 2:
+                    currMoves.push(Coordinate(x, prevShipMove.y + (timesHit + 1)));
+                case 1:
+                    currMoves.push(Coordinate(x, prevShipMove.y + timesHit));
+            }
+            break;
+        // If you went Down, go back Up.
+        case DOWN:
+            switch (prevShipHit.health) {
+                case 3:
+                    currMoves.push(Coordinate(x, prevShipMove.y - (timesHit + 2)));
+                case 2:
+                    currMoves.push(Coordinate(x, prevShipMove.y - (timesHit + 1)));
+                case 1:
+                    currMoves.push(Coordinate(x, prevShipMove.y - timesHit));
+            }
+            break;
+        // If you went Left, go Right.  
+        case LEFT:
+            switch (prevShipHit.health) {
+                case 3:
+                    currMoves.push(Coordinate(prevShipMove.x + (timesHit + 2), y));
+                case 2:
+                    currMoves.push(Coordinate(prevShipMove.x + (timesHit + 1), y));
+                case 1:
+                    currMoves.push(Coordinate(prevShipMove.x + timesHit, y));
+            }
+            break;
+        // If you went Right, go Left.
+        case RIGHT:
+            switch (prevShipHit.health) {
+                case 3:
+                    currMoves.push(Coordinate(prevShipMove.x - (timesHit + 2), y));
+                case 2:
+                    currMoves.push(Coordinate(prevShipMove.x - (timesHit + 1), y));
+                case 1:
+                    currMoves.push(Coordinate(prevShipMove.x - timesHit, y));
+            }
+            break;
     }
 }
 
