@@ -5,14 +5,57 @@ using namespace std;
 
 int main(void) {
     cout << "----------------------Battleship--------------------" << endl;
+    
+    // Ask for the number of players.
+    string strNumPlayers;
+    int numPlayers;
+    bool validNumPlayers = false;
 
+    while (!validNumPlayers) {
+        try {
+            cout << "Enter the number of players (1 or 2): ";
+            getline(cin, strNumPlayers);
+
+            // Check the length.
+            if (strNumPlayers.length() > 1)
+                throw logic_error("Invalid input, please enter a single digit.");
+            
+            if (strNumPlayers.length() == 0)
+                throw logic_error("No option entered.");
+
+            // Check for a zero.
+            if (strNumPlayers[0] == '0') 
+                throw logic_error("You can't have no players.");
+            
+            // If a non-digit is entered.
+            if (strNumPlayers[0] < '1' || strNumPlayers[0] > '9') 
+                throw logic_error("Only digits are allowed.");
+
+            // Check if a one or two is entered.
+            switch (strNumPlayers[0]) {
+                case '1':
+                    numPlayers = 1;
+                    validNumPlayers = true;
+                    break;
+                case '2':
+                    numPlayers = 2;
+                    validNumPlayers = true;
+                    break;
+                default:
+                    throw logic_error("Too many players, it must be 1 or 2.");
+            }
+        } catch (logic_error e) {
+            cout << "Error: " << e.what() << endl;
+        }
+    }
+
+    // Asks the user if they want to read their ship placements from their file.
     string shipOption;
     bool shipFromFile;
     bool validOption = false;
 
-    // Asks the user if they want to read their ship placements from their file.
     while (!validOption) {
-        cout << "Do you want to read your ships from a file? (Y/N) " << endl;
+        cout << "Do you want to read your ships from a file (Y/N)? ";
         getline(cin, shipOption);
 
         try {
@@ -48,7 +91,7 @@ int main(void) {
 
     // Stop the game if the file can't be found (if they choose to use it).
     try {
-        myGame.startGame(shipFromFile);
+        myGame.startGame(numPlayers, shipFromFile);
     } catch (runtime_error e) {
         cout << "Error: " << e.what() << endl;
         cout << "Terminating game." << endl;
@@ -57,7 +100,17 @@ int main(void) {
 
     // Run the game until it's finished.
     while (!myGame.isGameFinished()) {
-        cout << endl << "----------------------Your Turn---------------------" << endl;
+        // Display text depending on the player turn and number of players.
+        if (numPlayers == 2) {
+            if (myGame.getCurrPlayer() == 1) {
+                cout << endl << "-----------------------P1 Turn----------------------" << endl;
+            } else {
+                cout << endl << "-----------------------P2 Turn----------------------" << endl;
+            }
+        } else {
+            cout << endl << "----------------------Your Turn---------------------" << endl;
+        }
+        
         myGame.showBoard();
 
         string xy;

@@ -26,13 +26,16 @@ class Battleship {
     public:
         Battleship();
         ~Battleship();
-        void startGame(bool shipFromFile);
+        void startGame(int numPlayers, bool shipFromFile);
         void showBoard();
         void shoot(char charX, int y);
-        bool isGameFinished();
+        bool isGameFinished() { return isFinished; }
+        int getCurrPlayer() { return currPlayer; }
     private:
         // static makes it useable in switch, case.
-        static const char emptySpace = '-'; 
+        static const char emptySpace = '-';
+        int numPlayers;
+        int currPlayer;
         char** p1Board;
         char** p2Board;
         int p1ShipCount;

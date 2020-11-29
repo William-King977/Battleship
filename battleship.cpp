@@ -26,10 +26,12 @@ Battleship::~Battleship() {
 }
 
 // Initialises the game components and fills the board.
-void Battleship::startGame(bool shipFromFile) {
+void Battleship::startGame(int numPlayers, bool shipFromFile) {
     p1Board = new char* [10];
     p2Board = new char* [10];
 
+    this->numPlayers = numPlayers;
+    currPlayer = 1; // Whose turn it is.
     p1ShipCount = 5;
     p2ShipCount = 5;
     isFinished = false;
@@ -248,6 +250,11 @@ vector<direction> Battleship::getDirections(int x, int y, int shipLength, char**
 
 // Takes the player's co-ordinates to perform their turn.
 void Battleship::shoot(char charX, int y) {
+    // Set the current board, ships and ship count.
+    char** &currBoard = (currPlayer == 1) ? p2Board : p1Board;
+    unordered_map<char, Ship> &currShips = (currPlayer == 1) ? p2Ships : p1Ships;
+    int &currShipCount = (currPlayer == 1) ? p2ShipCount : p1ShipCount;
+
     int x = charX - 'A';
     y--; // Decrement y for index use.
 
@@ -255,7 +262,7 @@ void Battleship::shoot(char charX, int y) {
     char shipType;
 
     // Check what was hit.
-    switch (p2Board[y][x]) {
+    switch (currBoard[y][x]) {
         // If a ship is hit.
         case 'C':
         case 'B':
@@ -263,11 +270,11 @@ void Battleship::shoot(char charX, int y) {
         case 'S':
         case 'P':
             shipHit = true;
-            shipType = p2Board[y][x];
-            p2Board[y][x] = 'X';
+            shipType = currBoard[y][x];
+            currBoard[y][x] = 'X';
             break;
         case emptySpace:
-            p2Board[y][x] = 'O';
+            currBoard[y][x] = 'O';
             cout << "Nothing was hit." << endl;
             break;
         default:
@@ -275,31 +282,55 @@ void Battleship::shoot(char charX, int y) {
             throw logic_error("You've hit this position already.");
     }
 
+    // Holds the opponents ship number to show appropriate text.
+    char enemyNum = (currPlayer == 1) ? '2' : '1';
+
     // If a ship was hit.
     if (shipHit) {
         // Get the ship that was hit.
-        Ship &thatShip = p2Ships[shipType];
+        Ship &thatShip = currShips[shipType];
         thatShip.health--;
-        cout << "You've hit the enemy's " << thatShip.name << '.' << endl;
+        // Display a suitable message.
+        if (numPlayers == 1) {
+            cout << "You've hit the enemy's " << thatShip.name << '.' << endl;
+        } else {
+            cout << "You've hit Player " << enemyNum << "'s " << thatShip.name << '.' << endl;
+        }
 
         // If the resulting hit sunk the ship.
         if (thatShip.health == 0) {
-            cout << "You've sunk the enemy's " << thatShip.name << '.' << endl;
-            p2ShipCount--;
+            currShipCount--;
+            // Display a suitable message.
+            if (numPlayers == 1) {
+                cout << "You've sunk the enemy's " << thatShip.name << '.' << endl;
+            } else {
+                cout << "You've sunk Player " << enemyNum << "'s " << thatShip.name << '.' << endl;
+            }
         }
     }
 
     // If all the ships have sunk.
-    if (p2ShipCount == 0) {
+    if (currShipCount == 0) {
         isFinished = true;
         this->showBoard();
-        cout << "Congratulations! You have sunk all the enemy ships." << endl;
+        // Display a suitable message.
+        if (numPlayers == 1) {
+            cout << "Congratulations! You have sunk all the enemy ships." << endl;
+        } else {
+            cout << "Congratulations! You have sunk all of Player " << enemyNum << "'s ships." << endl;
+            cout << "Player " << currPlayer << " wins!";
+        }
         return;
     }
 
-    // Perform opponent's turn.
-    cout << endl << "---------------------CPU's Turn---------------------" << endl;
-    this->enemyShoot();
+    if (numPlayers == 1) {
+        // Perform the CPU's turn.
+        cout << endl << "---------------------CPU's Turn---------------------" << endl;
+        this->enemyShoot();
+    } else {
+        // Change players if it's a two player game.
+        currPlayer = (currPlayer == 1) ? 2 : 1;
+    }
 }
 
 // Performs the CPU's turn.
@@ -560,53 +591,48 @@ bool Battleship::isPosHit(int x, int y) {
     }
 }
 
-// Checks if the game is over or not.
-bool Battleship::isGameFinished() {
-    return isFinished;
-}
-
 // Show the current contents of the boards.
 void Battleship::showBoard() {
-    cout << endl;
-    cout << " P1  A B C D E F G H I J  |" << " CPU  A B C D E F G H I J" << endl;
+    string enemyName = (numPlayers == 1) ? " CPU  " : " P2   ";
+
+    cout << endl << "P1   A B C D E F G H I J  |" << enemyName << "A B C D E F G H I J" << endl;
     cout << "   ---------------------  |" << "    ---------------------" << endl;
     for (int i = 0; i < 10; i++) {
         // Print line of the first board.
         for (int j = 0; j < 10; j++) {
+            // Hide P1's ships if it's a two player game.
+            char currPiece = (numPlayers == 2) ? emptySpace : p1Board[i][j];
+            switch (p1Board[i][j]) {
+                case 'X':
+                case 'O':
+                    currPiece = p1Board[i][j];
+                    break;
+            }
             if (j == 0 && i == 9) {
-                cout << i + 1 << " | " << p1Board[i][j] << ' ';
+                cout << i + 1 << " | " << currPiece << ' ';
             } else if (j == 0) {
-                cout << ' ' << i + 1 << " | " << p1Board[i][j] << ' ';
+                cout << ' ' << i + 1 << " | " << currPiece << ' ';
             } else {
-                cout << p1Board[i][j] << ' ';
+                cout << currPiece << ' ';
             }
         }
 
         // Print line of the second board.
         for (int j = 0; j < 10; j++) {
             // Hide the opponents ships.
+            char currPiece = emptySpace;
             switch (p2Board[i][j]) {
-                case 'C':
-                case 'B':
-                case 'D':
-                case 'S':
-                case 'P':
-                    if (j == 0 && i == 9) {
-                        cout << " | " << i + 1 << " | " << emptySpace << ' ';
-                    } else if (j == 0) {
-                        cout << " |  " << i + 1 << " | " << emptySpace << ' ';
-                    } else {
-                        cout << emptySpace << ' ';
-                    }
+                case 'X':
+                case 'O':
+                    currPiece = p2Board[i][j];
                     break;
-               default:
-                    if (j == 0 && i == 9) {
-                        cout << " | " << i + 1 << " | " << p2Board[i][j] << ' ';
-                    } else if (j == 0) {
-                        cout << " |  " << i + 1 << " | " << p2Board[i][j] << ' ';
-                    } else {
-                        cout << p2Board[i][j] << ' ';
-                    }
+            }
+            if (j == 0 && i == 9) {
+                cout << " | " << i + 1 << " | " << currPiece << ' ';
+            } else if (j == 0) {
+                cout << " |  " << i + 1 << " | " << currPiece << ' ';
+            } else {
+                cout << currPiece << ' ';
             }
         }
         cout << endl;
