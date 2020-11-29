@@ -26,7 +26,7 @@ Battleship::~Battleship() {
 }
 
 // Initialises the game components and fills the board.
-void Battleship::startGame(int numPlayers, bool shipFromFile) {
+void Battleship::startGame(int numPlayers, bool loadP1ShipFile, bool loadP2ShipFile) {
     p1Board = new char* [10];
     p2Board = new char* [10];
 
@@ -50,20 +50,24 @@ void Battleship::startGame(int numPlayers, bool shipFromFile) {
     srand(time(NULL));
 
     // Set the ships for player one.
-    if (shipFromFile) {
-        getShipsFromFile();
+    if (loadP1ShipFile) {
+        getShipsFromFile("P1 Board.txt", p1Board);
         setShipData(p1Ships);
     } else {
         placeShips(p1Board, p1Ships);
     }
 
-    // Set ships for the CPU.
-    placeShips(p2Board, p2Ships);
+    // Set ships for player two.
+    if (loadP2ShipFile) {
+        getShipsFromFile("P2 Board.txt", p2Board);
+        setShipData(p2Ships);
+    } else {
+        placeShips(p2Board, p2Ships);
+    }
 }
 
 // Reads the ships from the specified file.
-void Battleship::getShipsFromFile() {
-    const string fileName = "P1 Board.txt";
+void Battleship::getShipsFromFile(string fileName, char** &currBoard) {
     ifstream boardFile(fileName);
 
     // Checks if it exists.
@@ -89,7 +93,7 @@ void Battleship::getShipsFromFile() {
                 case 'D':
                 case 'S':
                 case 'P':
-                    p1Board[rowNum][colNum] = row[i];
+                    currBoard[rowNum][colNum] = row[i];
                     colNum++;
                     break;
                 case emptySpace:

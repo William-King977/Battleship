@@ -52,38 +52,44 @@ int main(void) {
     // Asks the user if they want to read their ship placements from their file.
     string shipOption;
     bool shipFromFile;
-    bool validOption = false;
+    bool loadP1ShipFile = false;
+    bool loadP2ShipFile = false;
 
-    while (!validOption) {
-        cout << "Do you want to read your ships from a file (Y/N)? ";
-        getline(cin, shipOption);
+    for (int i = 0; i < numPlayers; i++) {
+        bool validOption = false;
+        while (!validOption) {
+            cout << "Load pre-defined ships for Player " << i + 1 << " (Y/N)? ";
+            getline(cin, shipOption);
 
-        try {
-            // Check input length.
-            if (shipOption.length() > 1)
-                throw logic_error("Invalid option, input is too long.");
+            try {
+                // Check input length.
+                if (shipOption.length() > 1)
+                    throw logic_error("Invalid option, input is too long.");
 
-            if (shipOption.length() == 0)
-                throw logic_error("No option entered.");
+                if (shipOption.length() == 0)
+                    throw logic_error("No option entered.");
 
-            // Check the option entered.
-            switch (shipOption[0]) {
-                case 'N':
-                case 'n':
-                    shipFromFile = false;
-                    validOption = true;
-                    break;
-                case 'Y':
-                case 'y':
-                    shipFromFile = true;
-                    validOption = true;
-                    break;
-                default:
-                    throw logic_error("Invalid option, enter Y or N.");
+                // Check the option entered.
+                switch (shipOption[0]) {
+                    case 'N':
+                    case 'n':
+                        shipFromFile = false;
+                        validOption = true;
+                        break;
+                    case 'Y':
+                    case 'y':
+                        shipFromFile = true;
+                        validOption = true;
+                        break;
+                    default:
+                        throw logic_error("Invalid option, enter Y or N.");
+                }
+            } catch (logic_error e) {
+                cout << "Error: " << e.what() << endl;
             }
-        } catch (logic_error e) {
-            cout << "Error: " << e.what() << endl;
         }
+        loadP1ShipFile = (i == 0) ? shipFromFile : loadP1ShipFile;
+        loadP2ShipFile = (i == 1) ? shipFromFile : loadP2ShipFile;
     }
 
     // Initialise the game.
@@ -91,7 +97,7 @@ int main(void) {
 
     // Stop the game if the file can't be found (if they choose to use it).
     try {
-        myGame.startGame(numPlayers, shipFromFile);
+        myGame.startGame(numPlayers, loadP1ShipFile, loadP2ShipFile);
     } catch (runtime_error e) {
         cout << "Error: " << e.what() << endl;
         cout << "Terminating game." << endl;
