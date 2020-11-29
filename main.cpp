@@ -4,35 +4,54 @@
 using namespace std;
 
 int main(void) {
-    char shipOption;
+    string shipOption;
     bool shipFromFile;
     bool validOption = false;
 
     // Asks the user if they want to read their ship placements from their file.
     while (!validOption) {
         cout << "Do you want to read your ships from a file? (Y/N) " << endl;
-        cin >> shipOption;
-        cin.ignore();
+        getline(cin, shipOption);
 
-        switch (shipOption) {
-            case 'N':
-            case 'n':
-                shipFromFile = false;
-                validOption = true;
-                break;
-            case 'Y':
-            case 'y':
-                shipFromFile = true;
-                validOption = true;
-                break;
-            default:
-                cout << "Invalid option, please enter again." << endl;
+        try {
+            // Check input length.
+            if (shipOption.length() > 1) {
+                throw logic_error("Invalid option, input is too long.");
+            } else if (shipOption.length() == 0) {
+                throw logic_error("No option entered.");
+            }
+
+            // Check the option entered.
+            switch (shipOption[0]) {
+                case 'N':
+                case 'n':
+                    shipFromFile = false;
+                    validOption = true;
+                    break;
+                case 'Y':
+                case 'y':
+                    shipFromFile = true;
+                    validOption = true;
+                    break;
+                default:
+                    throw logic_error("Invalid option, enter Y or N.");
+            }
+        } catch (logic_error e) {
+            cout << "Error: " << e.what() << endl;
         }
     }
 
     // Initialise the game.
     Battleship myGame;
-    myGame.startGame(shipFromFile);
+
+    // Stop the game if the file can't be found (if they choose to use it).
+    try {
+        myGame.startGame(shipFromFile);
+    } catch (runtime_error e) {
+        cout << "Error: " << e.what() << endl;
+        cout << "Terminating game." << endl;
+        return -1;
+    }
 
     // Run the game until it's finished.
     while (!myGame.isGameFinished()) {

@@ -66,12 +66,12 @@ void Battleship::getShipsFromFile() {
     // Checks if it exists.
     struct stat buffer;
     if (stat(fileName.c_str(), &buffer)) {
-        throw string("File was not found at: " + fileName);
+        throw runtime_error("The file '" + fileName + "' cannot be found.");
     }
 
     // If it has restricted access.
     if (!boardFile.is_open())
-        throw string("No rights to write to file: " + fileName);
+        throw runtime_error("No rights to access the file, " + fileName);
 
     string row;
     int rowNum = 0;
