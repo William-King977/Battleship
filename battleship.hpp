@@ -30,6 +30,7 @@ class Battleship {
         void showBoard();
         void shoot(char charX, int y);
         bool isGameFinished() { return isFinished; }
+        int getNumPlayers() { return numPlayers; }
         int getCurrPlayer() { return currPlayer; }
     private:
         // static makes it useable in switch, case.

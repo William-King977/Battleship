@@ -3,16 +3,46 @@
 #include <exception>
 using namespace std;
 
+void setNumPlayers(int&);
+void setFileOptions(int, bool&, bool&);
+void runGame(Battleship);
+
+// DRIVER CODE.
 int main(void) {
     cout << "----------------------Battleship--------------------" << endl;
     
     // Ask for the number of players.
-    string strNumPlayers;
     int numPlayers;
-    bool validNumPlayers = false;
+    setNumPlayers(numPlayers);
 
+    // Asks the user if they want to read their ship placements from their file.
+    bool loadP1ShipFile = false;
+    bool loadP2ShipFile = false;
+    setFileOptions(numPlayers, loadP1ShipFile, loadP2ShipFile);
+
+    // Initialise the game.
+    Battleship myGame;
+
+    // Stop the game if the file can't be found (if they choose to use it).
+    try {
+        myGame.startGame(numPlayers, loadP1ShipFile, loadP2ShipFile);
+    } catch (runtime_error e) {
+        cout << "Error: " << e.what() << endl;
+        cout << "Terminating game." << endl;
+        return -1;
+    }
+
+    // Run the game until completion.
+    runGame(myGame);
+    return 0;
+}
+
+// Sets the number of players for the game.
+void setNumPlayers(int &numPlayers) {
+    bool validNumPlayers = false;
     while (!validNumPlayers) {
         try {
+            string strNumPlayers;
             cout << "Enter the number of players (1 or 2): ";
             getline(cin, strNumPlayers);
 
@@ -48,17 +78,16 @@ int main(void) {
             cout << "Error: " << e.what() << endl;
         }
     }
+}
 
-    // Asks the user if they want to read their ship placements from their file.
+// Sets whether the players want to use a pre-positioned file of ships or not.
+void setFileOptions(int numPlayers, bool &loadP1ShipFile, bool &loadP2ShipFile) {
     string shipOption;
     bool shipFromFile;
-    bool loadP1ShipFile = false;
-    bool loadP2ShipFile = false;
-
     for (int i = 0; i < numPlayers; i++) {
         bool validOption = false;
         while (!validOption) {
-            cout << "Load pre-defined ships for Player " << i + 1 << " (Y/N)? ";
+            cout << "Load pre-positioned ships for Player " << i + 1 << " (Y/N)? ";
             getline(cin, shipOption);
 
             try {
@@ -91,23 +120,14 @@ int main(void) {
         loadP1ShipFile = (i == 0) ? shipFromFile : loadP1ShipFile;
         loadP2ShipFile = (i == 1) ? shipFromFile : loadP2ShipFile;
     }
+}
 
-    // Initialise the game.
-    Battleship myGame;
-
-    // Stop the game if the file can't be found (if they choose to use it).
-    try {
-        myGame.startGame(numPlayers, loadP1ShipFile, loadP2ShipFile);
-    } catch (runtime_error e) {
-        cout << "Error: " << e.what() << endl;
-        cout << "Terminating game." << endl;
-        return -1;
-    }
-
-    // Run the game until it's finished.
+// Runs the game until it's finished.
+void runGame(Battleship myGame) {
+    // Runs until all the ships have sunk for one side.
     while (!myGame.isGameFinished()) {
         // Display text depending on the player turn and number of players.
-        if (numPlayers == 2) {
+        if (myGame.getNumPlayers() == 2) {
             if (myGame.getCurrPlayer() == 1) {
                 cout << endl << "-----------------------P1 Turn----------------------" << endl;
             } else {
@@ -119,6 +139,7 @@ int main(void) {
         
         myGame.showBoard();
 
+        // Get co-ordinates, then seperate them.
         string xy;
         cout << "Enter the co-ordinates (e.g. A1): ";
         getline(cin, xy);
@@ -162,5 +183,4 @@ int main(void) {
             cout << "Error: " << e.what() << endl;
         }
     }
-    return 0;
 }
