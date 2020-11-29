@@ -47,6 +47,7 @@ class Battleship {
         // Methods.
         void placeShips(char** &board, unordered_map<char, Ship> &ships);
         void getShipsFromFile();
+        void setShipData(unordered_map<char, Ship> &ships);
         vector<direction> getDirections(int x, int y, int shipLength, char** board);
         void enemyShoot();
         void setCpuMoves(int x, int y, Ship thatShip);

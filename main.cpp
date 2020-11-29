@@ -4,6 +4,8 @@
 using namespace std;
 
 int main(void) {
+    cout << "----------------------Battleship--------------------" << endl;
+
     string shipOption;
     bool shipFromFile;
     bool validOption = false;
@@ -15,11 +17,11 @@ int main(void) {
 
         try {
             // Check input length.
-            if (shipOption.length() > 1) {
+            if (shipOption.length() > 1)
                 throw logic_error("Invalid option, input is too long.");
-            } else if (shipOption.length() == 0) {
+
+            if (shipOption.length() == 0)
                 throw logic_error("No option entered.");
-            }
 
             // Check the option entered.
             switch (shipOption[0]) {

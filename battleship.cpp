@@ -50,6 +50,7 @@ void Battleship::startGame(bool shipFromFile) {
     // Set the ships for player one.
     if (shipFromFile) {
         getShipsFromFile();
+        setShipData(p1Ships);
     } else {
         placeShips(p1Board, p1Ships);
     }
@@ -60,14 +61,13 @@ void Battleship::startGame(bool shipFromFile) {
 
 // Reads the ships from the specified file.
 void Battleship::getShipsFromFile() {
-    string fileName = "P1 Board.txt";
+    const string fileName = "P1 Board.txt";
     ifstream boardFile(fileName);
 
     // Checks if it exists.
     struct stat buffer;
-    if (stat(fileName.c_str(), &buffer)) {
+    if (stat(fileName.c_str(), &buffer))
         throw runtime_error("The file '" + fileName + "' cannot be found.");
-    }
 
     // If it has restricted access.
     if (!boardFile.is_open())
@@ -101,7 +101,29 @@ void Battleship::getShipsFromFile() {
     boardFile.close();
 }
 
-// Places the ships randomly on the board.
+// Sets the information for each ship.
+// Used when random ship placement isn't used.
+void Battleship::setShipData(unordered_map<char, Ship> &ships) {
+    for (int i = 2; i <= 5; i++) {
+        switch (i) {
+            case 5:
+                ships['C'] = {"Carrier", i, i};
+                break;
+            case 4:
+                ships['B'] = {"Battleship", i, i};
+                break;
+            case 3:
+                ships['D'] = {"Destroyer", i, i};
+                ships['S'] = {"Submarine", i, i};
+                break;
+            case 2:
+                ships['P'] = {"Patrol Boat", i, i};
+                break;
+        }
+    }
+}
+
+// Places the ships randomly on the board and sets the data for each ship.
 void Battleship::placeShips(char** &board, unordered_map<char, Ship> &ships) {
     for (int i = 5; i > 0; i--) {
         int x = rand() % 10;
