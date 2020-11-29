@@ -26,7 +26,7 @@ class Battleship {
     public:
         Battleship();
         ~Battleship();
-        void startGame();
+        void startGame(bool shipFromFile);
         void showBoard();
         void shoot(char charX, int y);
         bool isGameFinished();
@@ -46,6 +46,7 @@ class Battleship {
 
         // Methods.
         void placeShips(char** &board, unordered_map<char, Ship> &ships);
+        void getShipsFromFile();
         vector<direction> getDirections(int x, int y, int shipLength, char** board);
         void enemyShoot();
         void setCpuMoves(int x, int y, Ship thatShip);

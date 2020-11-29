@@ -4,9 +4,37 @@
 using namespace std;
 
 int main(void) {
-    Battleship myGame;
-    myGame.startGame();
+    char shipOption;
+    bool shipFromFile;
+    bool validOption = false;
 
+    // Asks the user if they want to read their ship placements from their file.
+    while (!validOption) {
+        cout << "Do you want to read your ships from a file? (Y/N) " << endl;
+        cin >> shipOption;
+        cin.ignore();
+
+        switch (shipOption) {
+            case 'N':
+            case 'n':
+                shipFromFile = false;
+                validOption = true;
+                break;
+            case 'Y':
+            case 'y':
+                shipFromFile = true;
+                validOption = true;
+                break;
+            default:
+                cout << "Invalid option, please enter again." << endl;
+        }
+    }
+
+    // Initialise the game.
+    Battleship myGame;
+    myGame.startGame(shipFromFile);
+
+    // Run the game until it's finished.
     while (!myGame.isGameFinished()) {
         cout << endl << "----------------------Your Turn---------------------" << endl;
         myGame.showBoard();

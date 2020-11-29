@@ -1,5 +1,7 @@
 #include "battleship.hpp"
 #include <iostream>
+#include <fstream>
+#include <sys/stat.h>
 #include <exception>
 #include <cstdlib>
 #include <ctime>
@@ -24,7 +26,7 @@ Battleship::~Battleship() {
 }
 
 // Initialises the game components and fills the board.
-void Battleship::startGame() {
+void Battleship::startGame(bool shipFromFile) {
     p1Board = new char* [10];
     p2Board = new char* [10];
 
@@ -44,8 +46,59 @@ void Battleship::startGame() {
 
     // Placing the seed here ensures that both board are random.
     srand(time(NULL));
-    placeShips(p1Board, p1Ships);
+
+    // Set the ships for player one.
+    if (shipFromFile) {
+        getShipsFromFile();
+    } else {
+        placeShips(p1Board, p1Ships);
+    }
+
+    // Set ships for the CPU.
     placeShips(p2Board, p2Ships);
+}
+
+// Reads the ships from the specified file.
+void Battleship::getShipsFromFile() {
+    string fileName = "P1 Board.txt";
+    ifstream boardFile(fileName);
+
+    // Checks if it exists.
+    struct stat buffer;
+    if (stat(fileName.c_str(), &buffer)) {
+        throw string("File was not found at: " + fileName);
+    }
+
+    // If it has restricted access.
+    if (!boardFile.is_open())
+        throw string("No rights to write to file: " + fileName);
+
+    string row;
+    int rowNum = 0;
+    int colNum = 0;
+    
+    while (getline(boardFile, row)) {
+        // Insert pieces from each row.
+        for (int i = 0; i < row.length(); i++) {
+            // Each piece is seperated by a whitespace.
+            switch (row[i]) {
+                case 'C':
+                case 'B':
+                case 'D':
+                case 'S':
+                case 'P':
+                    p1Board[rowNum][colNum] = row[i];
+                    colNum++;
+                    break;
+                case emptySpace:
+                    colNum++;
+                    break;
+            }
+        }
+        colNum = 0;
+        rowNum++;
+    }
+    boardFile.close();
 }
 
 // Places the ships randomly on the board.
@@ -263,6 +316,8 @@ void Battleship::enemyShoot() {
         case emptySpace:
             p1Board[y][x] = 'O';
             cout << "Nothing was hit." << endl;
+            // Sets a ship that has been hit (but not sunk). 
+            // If there is one, then push the remaining moves to sink it.
             setPrevShip();
             if ((prevShipHit.name.length()) > 0)
                 backTrackShot(x, y);
