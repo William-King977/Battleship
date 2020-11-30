@@ -287,8 +287,8 @@ void Battleship::shoot(char charX, int y) {
             throw logic_error("You've hit this position already.");
     }
 
-    // Holds the opponents ship number to show appropriate text.
-    char enemyNum = (currPlayer == 1) ? '2' : '1';
+    // Holds the opponent's player number.
+    string enemyPlayer = (currPlayer == 1) ? "Player 2" : "Player 1";
 
     // If a ship was hit.
     if (shipHit) {
@@ -299,7 +299,7 @@ void Battleship::shoot(char charX, int y) {
         if (numPlayers == 1) {
             cout << "You've hit the enemy's " << thatShip.name << '.' << endl;
         } else {
-            cout << "You've hit Player " << enemyNum << "'s " << thatShip.name << '.' << endl;
+            cout << "You've hit " << enemyPlayer << "'s " << thatShip.name << '.' << endl;
         }
 
         // If the resulting hit sunk the ship.
@@ -309,10 +309,14 @@ void Battleship::shoot(char charX, int y) {
             if (numPlayers == 1) {
                 cout << "You've sunk the enemy's " << thatShip.name << '.' << endl;
             } else {
-                cout << "You've sunk Player " << enemyNum << "'s " << thatShip.name << '.' << endl;
+                cout << "You've sunk " << enemyPlayer << "'s " << thatShip.name << '.' << endl;
             }
         }
     }
+
+    // Show the number of ships remaining.
+    string playerType = (numPlayers == 1) ? "CPU" : enemyPlayer;
+    cout << "Ships Remaining (" << playerType << "): " << currShipCount << endl;
 
     // If all the ships have sunk.
     if (currShipCount == 0) {
@@ -322,7 +326,7 @@ void Battleship::shoot(char charX, int y) {
         if (numPlayers == 1) {
             cout << "Congratulations! You have sunk all the enemy ships." << endl;
         } else {
-            cout << "Congratulations! You have sunk all of Player " << enemyNum << "'s ships." << endl;
+            cout << "Congratulations! You have sunk all of " << enemyPlayer << "'s ships." << endl;
             cout << "Player " << currPlayer << " wins!" << endl;
         }
         return;
@@ -409,6 +413,9 @@ void Battleship::enemyShoot() {
             setCpuMoves(x, y, thatShip);
         }
     }
+
+    // Show the number of ships remaining.
+    cout << "Ships Remaining (Player 1): " << p1ShipCount << endl;
 
     // If all the ships have sunk.
     if (p1ShipCount == 0) {
