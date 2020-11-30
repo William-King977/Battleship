@@ -6,6 +6,7 @@ using namespace std;
 void setNumPlayers(int&);
 void setFileOptions(int, bool&, bool&);
 void runGame(Battleship);
+void playAgain(void);
 
 // DRIVER CODE.
 int main(void) {
@@ -34,6 +35,7 @@ int main(void) {
 
     // Run the game until completion.
     runGame(myGame);
+    playAgain();
     return 0;
 }
 
@@ -183,4 +185,39 @@ void runGame(Battleship myGame) {
             cout << "Error: " << e.what() << endl;
         }
     }
+}
+
+// Asks if the player wants to play again.
+void playAgain(void) {
+    string option;
+    cout << "Do you want to play again (Y/N)? ";
+    getline(cin, option);
+
+    try {
+        // Check input length.
+        if (option.length() > 1)
+            throw logic_error("Invalid option, input is too long.");
+
+        if (option.length() == 0)
+            throw logic_error("No option entered.");
+
+        // Check the option entered.
+        switch (option[0]) {
+            case 'N':
+            case 'n':
+                // Ends the program...
+                cout << "Terminating game..." << endl;
+                break;
+            case 'Y':
+            case 'y':
+               // Runs the main method again.
+                main();
+                break;
+            default:
+                throw logic_error("Invalid option, enter Y or N.");
+        }
+    } catch (logic_error e) {
+        cout << "Error: " << e.what() << endl;
+        playAgain(); 
+    }    
 }

@@ -21,8 +21,9 @@ Battleship::~Battleship() {
     delete[] p2Board;
 
     cpuMoves = {};
-    p1Ships.clear();
-    p2Ships.clear();
+    shipPosFound = {};
+    p1Ships = {};
+    p2Ships = {};
 }
 
 // Initialises the game components and fills the board.
@@ -322,7 +323,7 @@ void Battleship::shoot(char charX, int y) {
             cout << "Congratulations! You have sunk all the enemy ships." << endl;
         } else {
             cout << "Congratulations! You have sunk all of Player " << enemyNum << "'s ships." << endl;
-            cout << "Player " << currPlayer << " wins!";
+            cout << "Player " << currPlayer << " wins!" << endl;
         }
         return;
     }
