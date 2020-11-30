@@ -69,11 +69,12 @@ void Battleship::startGame(int numPlayers, bool loadP1ShipFile, bool loadP2ShipF
 
 // Reads the ships from the specified file.
 void Battleship::getShipsFromFile(string fileName, char** &currBoard) {
-    ifstream boardFile(fileName);
+    const string boardDir = "boards/" + fileName;
+    ifstream boardFile(boardDir);
 
     // Checks if it exists.
     struct stat buffer;
-    if (stat(fileName.c_str(), &buffer))
+    if (stat(boardDir.c_str(), &buffer))
         throw runtime_error("The file '" + fileName + "' cannot be found.");
 
     // If it has restricted access.
