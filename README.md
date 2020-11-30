@@ -6,7 +6,8 @@ A battleship game using text-based representation. Based on the guessing game of
 - Interaction is done through the Terminal, no GUI is involved.
 - The CPU's actions are mostly random.
 
-# Current Plans
-- Create a one player version against the computer, but the ship placements are random.
-- Create a two player version.
-- Import pre-defined ship positions using file handling.
+# Game Options
+- Single player against the computer.
+- Two player with another person (taking turns on same Terminal).
+- Both options allow imports of pre-positioned ship textfiles for Player 1 and/or Player 2 (not for CPU).
+
