@@ -191,6 +191,7 @@ void Battleship::placeShips(char** &board, unordered_map<char, Ship> &ships) {
         validDir.clear();
         validDir.shrink_to_fit();
 
+        // Place the ships on the board.
         switch (placeDir) {
             case UP:
                 for (int j = 0; j < shipLength; j++)
@@ -220,6 +221,7 @@ vector<direction> Battleship::getDirections(int x, int y, int shipLength, char**
     bool leftValid = true;
     bool rightValid = true;
 
+    // Try and place the ship in each direction.
     for (int j = 0; j < shipLength; j++) {
         // UP
         if ((y - shipLength < 0) || board[y - j][x] != emptySpace)
@@ -441,15 +443,15 @@ void Battleship::setCpuMoves(int x, int y, Ship thatShip) {
         queue<Coordinate> possibleMoves;
         
         // Up, down, left, right (respectively).
-        // Adds positions around where the ship was hit.
+        // Adds positions around where the ship was hit (don't push positions already hit).
         // We don't know where the ship is positioned at this point.
-        if (y > 0)
+        if (y > 0 && !isPosHit(x, y - 1))
             possibleMoves.push(Coordinate(x, y - 1));
-        if (y < 9)
+        if (y < 9  && !isPosHit(x, y + 1)) 
             possibleMoves.push(Coordinate(x, y + 1));
-        if (x > 0)
+        if (x > 0  && !isPosHit(x - 1, y))
             possibleMoves.push(Coordinate(x - 1, y));
-        if (x < 9)
+        if (x < 9  && !isPosHit(x + 2, y))
             possibleMoves.push(Coordinate(x + 1, y));
         cpuMoves[shipKey] = possibleMoves;
 

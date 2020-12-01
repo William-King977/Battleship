@@ -46,7 +46,7 @@ class Battleship {
         unordered_map<char, Ship> p1Ships;
         unordered_map<char, Ship> p2Ships;
         unordered_map<string, queue<Coordinate>> shipPosFound; // Discovered ship positions.
-        unordered_map<string, queue<Coordinate>> cpuMoves; // Moves to shink the ship found.
+        unordered_map<string, queue<Coordinate>> cpuMoves; // Moves to sink the ship(s) found.
 
         // Methods.
         void placeShips(char** &board, unordered_map<char, Ship> &ships);
