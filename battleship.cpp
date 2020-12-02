@@ -381,9 +381,8 @@ void Battleship::enemyShoot() {
         case emptySpace:
             p1Board[y][x] = 'O';
             cout << "Nothing was hit." << endl;
-            // Sets a ship that has been hit (but not sunk). 
-            // If there is one, then push the remaining moves to sink it.
-            setPrevShip();
+            // If there is a ship that has been hit (but not sunk),
+            // then push the remaining moves to sink it.
             if ((prevShipHit.name.length()) > 0)
                 backTrackShot(x, y);
             break;
@@ -411,6 +410,8 @@ void Battleship::enemyShoot() {
             // Remove ship from the maps.
             shipPosFound.erase(thatShip.name);
             cpuMoves.erase(thatShip.name);
+            // Sets the next previous ship to sink.
+            setPrevShip();
         // Only add moves if the ship has not sunk.
         } else {
             setCpuMoves(x, y, thatShip);
@@ -460,7 +461,7 @@ void Battleship::setCpuMoves(int x, int y, Ship thatShip) {
         //Adjust cpuMoves.
         queue<Coordinate> &currMoves = cpuMoves[shipKey];
 
-        // If the ship wasn't hit previously, then remove the blank moves (for this ship).
+        // If the ship was hit once previously, then remove the blank moves (for this ship).
         if (shipPosFound[shipKey].size() == 1)
             currMoves = {};
 
@@ -581,17 +582,15 @@ void Battleship::setAltMoves(direction dir, int x, int y, Coordinate prevShipMov
 
 // Sets the new previous ship, once a ship has sunk.
 void Battleship::setPrevShip() {
-    for (auto ship : shipPosFound) {
-        queue<Coordinate> currQueue = ship.second;
-        Ship currShip = p1Ships[ship.first[0]]; // First char of the ship name as a key.
-
-        // Find any unsunk ships that were previously hit.
-        if (currQueue.size() < currShip.length) {
-            prevShipHit = currShip;
-            return;
-        }
+    // Fetch a ship from shipPosFound (doesn't matter which).
+    if (!shipPosFound.empty()) {
+        string shipName = shipPosFound.begin()->first;
+        Ship currShip = p1Ships[shipName[0]];
+        prevShipHit = currShip;
+    } else {
+        // Indicate that there are no ships to sink (for now).
+        prevShipHit.name = "";
     }
-    prevShipHit.name = "";
 }
 
 // Checks if the next position has been hit already.
