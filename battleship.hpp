@@ -58,6 +58,7 @@ class Battleship {
         void backTrackShot(int x, int y);
         void setAltMoves(direction dir, int x, int y, Coordinate prevShipMove);
         void setPrevShip();
+        direction getDirection(Coordinate first, Coordinate last);
         bool isPosHit(int x, int y);
 };
 

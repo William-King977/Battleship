@@ -440,6 +440,10 @@ void Battleship::setCpuMoves(int x, int y, Ship thatShip) {
         hitPos.push(Coordinate(x, y));
         shipPosFound[shipKey] = hitPos;
 
+        // NOTE: if a shot is missed (after this turn) when trying to find
+        // the ship position, backtracking won't occur.
+        prevShipHit.name = "";
+
         // Create possible moves queue.
         queue<Coordinate> possibleMoves;
         
@@ -587,10 +591,38 @@ void Battleship::setPrevShip() {
         string shipName = shipPosFound.begin()->first;
         Ship currShip = p1Ships[shipName[0]];
         prevShipHit = currShip;
+
+        // Push moves to sink the unsunk ship.
+        if (cpuMoves[shipName].empty()) {
+            Coordinate prevMove = shipPosFound[shipName].back();
+            Coordinate firstMove = shipPosFound[shipName].front();
+            direction dir = getDirection(prevMove, firstMove);
+            setAltMoves(dir, prevMove.x, prevMove.y, prevMove);
+        }
     } else {
         // Indicate that there are no ships to sink (for now).
         prevShipHit.name = "";
     }
+}
+
+// Returns a direction based on two coordinates of a ship.
+direction Battleship::getDirection(Coordinate first, Coordinate last) {
+    int x = first.x;
+    int y = first.y;
+    int prevX = last.x;
+    int prevY = last.y;
+    direction dir;
+
+    if (y < prevY) {
+        dir = UP;
+    } else if (y > prevY) {
+        dir = DOWN;
+    } else if (x < prevX) {
+        dir = LEFT;
+    } else if (x > prevX) {
+        dir = RIGHT;
+    }
+    return dir;
 }
 
 // Checks if the next position has been hit already.
