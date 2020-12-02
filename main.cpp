@@ -49,19 +49,23 @@ void setNumPlayers(int &numPlayers) {
             getline(cin, strNumPlayers);
 
             // Check the length.
-            if (strNumPlayers.length() > 1)
+            if (strNumPlayers.length() > 1) {
                 throw logic_error("Invalid input, please enter a single digit.");
+            }
             
-            if (strNumPlayers.length() == 0)
+            if (strNumPlayers.length() == 0) {
                 throw logic_error("No option entered.");
+            }
 
             // Check for a zero.
-            if (strNumPlayers[0] == '0') 
+            if (strNumPlayers[0] == '0') {
                 throw logic_error("You can't have no players.");
+            }
             
             // If a non-digit is entered.
-            if (strNumPlayers[0] < '1' || strNumPlayers[0] > '9') 
+            if (strNumPlayers[0] < '1' || strNumPlayers[0] > '9')  {
                 throw logic_error("Only digits are allowed.");
+            }
 
             // Check if a one or two is entered.
             switch (strNumPlayers[0]) {
@@ -94,11 +98,13 @@ void setFileOptions(int numPlayers, bool &loadP1ShipFile, bool &loadP2ShipFile) 
 
             try {
                 // Check input length.
-                if (shipOption.length() > 1)
+                if (shipOption.length() > 1) {
                     throw logic_error("Invalid option, input is too long.");
+                }
 
-                if (shipOption.length() == 0)
+                if (shipOption.length() == 0) {
                     throw logic_error("No option entered.");
+                }
 
                 // Check the option entered.
                 switch (shipOption[0]) {
@@ -166,19 +172,22 @@ void runGame(Battleship myGame) {
             x = xy[0];
 
             // Check if x is in range.
-            if (x < 'A' || x > 'J')
+            if (x < 'A' || x > 'J') {
                 throw logic_error("The x-coordinate is out of range. Enter between A and J.");
+            }
 
             // Check if the y-coordinates are integers.
             for (char letter : strY) {
-                if (letter < '0' || letter > '9')
+                if (letter < '0' || letter > '9') {
                     throw logic_error("The y-coordinate must be in numbers.");
+                }
             }
 
             // Convert y-coordinates to an integer, then check the range.
             int y = stoi(strY);
-            if (y < 0 || y > 10)
+            if (y < 1 || y > 10) {
                 throw logic_error("The y-coordinate is out of range. Enter between 1 and 10.");
+            }
 
             myGame.shoot(x, y);
         } catch (logic_error e) {
@@ -195,11 +204,13 @@ void playAgain(void) {
 
     try {
         // Check input length.
-        if (option.length() > 1)
+        if (option.length() > 1) {
             throw logic_error("Invalid option, input is too long.");
+        }
 
-        if (option.length() == 0)
+        if (option.length() == 0) {
             throw logic_error("No option entered.");
+        }
 
         // Check the option entered.
         switch (option[0]) {

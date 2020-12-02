@@ -74,12 +74,14 @@ void Battleship::getShipsFromFile(string fileName, char** &currBoard) {
 
     // Checks if it exists.
     struct stat buffer;
-    if (stat(boardDir.c_str(), &buffer))
+    if (stat(boardDir.c_str(), &buffer)) {
         throw runtime_error("The file '" + fileName + "' cannot be found.");
+    }
 
     // If it has restricted access.
-    if (!boardFile.is_open())
+    if (!boardFile.is_open()) {
         throw runtime_error("No rights to access the file, " + fileName);
+    }
 
     string row;
     int rowNum = 0;
@@ -175,7 +177,7 @@ void Battleship::placeShips(char** &board, unordered_map<char, Ship> &ships) {
         ships[shipType] = newShip;
 
         // Stores the possible placements in the co-ordinate.
-        vector<direction> validDir = getDirections(x, y, shipLength, board);
+        vector<Direction> validDir = getValidDirections(x, y, shipLength, board);
         
         // If it's impossible to place the (whole) ship.
         if (validDir.size() == 0) {
@@ -185,7 +187,7 @@ void Battleship::placeShips(char** &board, unordered_map<char, Ship> &ships) {
 
         // Randomly choose the possible direction.
         int dirIndex = rand() % validDir.size();
-        direction placeDir = validDir[dirIndex];
+        Direction placeDir = validDir[dirIndex];
 
         // Clear up the vector.
         validDir.clear();
@@ -194,28 +196,32 @@ void Battleship::placeShips(char** &board, unordered_map<char, Ship> &ships) {
         // Place the ships on the board.
         switch (placeDir) {
             case UP:
-                for (int j = 0; j < shipLength; j++)
+                for (int j = 0; j < shipLength; j++) {
                     board[y - j][x] = shipType;
+                }
                 break;
             case DOWN:
-                for (int j = 0; j < shipLength; j++)
+                for (int j = 0; j < shipLength; j++) {
                     board[y + j][x] = shipType;
+                }
                 break;
             case LEFT:
-                for (int j = 0; j < shipLength; j++)
+                for (int j = 0; j < shipLength; j++) {
                     board[y][x - j] = shipType;
+                }
                 break;
             case RIGHT:
-                for (int j = 0; j < shipLength; j++)
+                for (int j = 0; j < shipLength; j++) {
                     board[y][x + j] = shipType;
+                }
                 break;
         }
     }
 }
 
 // Gets the valid placement directions for a ship.
-vector<direction> Battleship::getDirections(int x, int y, int shipLength, char** board) {
-    vector<direction> validDir;
+vector<Direction> Battleship::getValidDirections(int x, int y, int shipLength, char** board) {
+    vector<Direction> validDir;
     bool upValid = true;
     bool downValid = true;
     bool leftValid = true;
@@ -224,34 +230,43 @@ vector<direction> Battleship::getDirections(int x, int y, int shipLength, char**
     // Try and place the ship in each direction.
     for (int j = 0; j < shipLength; j++) {
         // UP
-        if ((y - shipLength < 0) || board[y - j][x] != emptySpace)
+        if ((y - shipLength < 0) || board[y - j][x] != emptySpace) {
             upValid = false;
+        }
 
         // DOWN
-        if ((y + shipLength > 9) || board[y + j][x] != emptySpace)
+        if ((y + shipLength > 9) || board[y + j][x] != emptySpace) {
             downValid = false;
+        }
 
         // LEFT
-        if ((x - shipLength < 0) || board[y][x - j] != emptySpace)
+        if ((x - shipLength < 0) || board[y][x - j] != emptySpace) {
             leftValid = false;
+        }
 
         // RIGHT
-        if ((x + shipLength > 9) || board[y][x + j] != emptySpace)
+        if ((x + shipLength > 9) || board[y][x + j] != emptySpace) {
             rightValid = false;
+        }
 
         // Exit early if placement is impossible.
-        if (!upValid && !downValid && !leftValid && !rightValid)
+        if (!upValid && !downValid && !leftValid && !rightValid) {
             break;
+        }
     }
 
-    if (upValid)
+    if (upValid) {
         validDir.push_back(UP);
-    if (downValid)
+    }
+    if (downValid) {
         validDir.push_back(DOWN);
-    if (leftValid)
+    }
+    if (leftValid) {
         validDir.push_back(LEFT);
-    if (rightValid)
+    }
+    if (rightValid) {
         validDir.push_back(RIGHT);
+    }
 
     return validDir;
 }
@@ -338,7 +353,7 @@ void Battleship::shoot(char charX, int y) {
     if (numPlayers == 1) {
         // Perform the CPU's turn.
         cout << endl << "---------------------CPU's Turn---------------------" << endl;
-        this->enemyShoot();
+        this->cpuShoot();
     } else {
         // Change players if it's a two player game.
         currPlayer = (currPlayer == 1) ? 2 : 1;
@@ -346,7 +361,7 @@ void Battleship::shoot(char charX, int y) {
 }
 
 // Performs the CPU's turn.
-void Battleship::enemyShoot() {
+void Battleship::cpuShoot() {
     int x;
     int y;
 
@@ -389,7 +404,7 @@ void Battleship::enemyShoot() {
         default:
             // The position was already hit.
             // Recurse the method until a different position is chosen.
-            enemyShoot();
+            cpuShoot();
             return;
     }
 
@@ -475,35 +490,41 @@ void Battleship::setCpuMoves(int x, int y, Ship thatShip) {
 
         prevShipHit = thatShip; // Used if backtracking is needed.
 
-        // If the coordinates found are going Up, down, left, right (respectively)
-        // in respect with the previously hit position.
-        if (y < prevShipMove.y) {
-            // Continue the direction if it's still in bounds and 
-            // if the next position hasn't been hit.
-            if (y > 0 && !isPosHit(x, y - 1)) {
-                currMoves.push(Coordinate(x, y - 1));
-            } else {
-                // Otherwise, set moves to sink the ship.
-                setAltMoves(UP, x, y, currShipMove);
-            }
-        } else if (y > prevShipMove.y) {
-            if (y < 9 && !isPosHit(x, y + 1)) {
-                currMoves.push(Coordinate(x, y + 1));
-            } else {
-                setAltMoves(DOWN, x, y, currShipMove);
-            }
-        } else if (x < prevShipMove.x) {
-            if (x > 0 && !isPosHit(x - 1, y)) {
-                currMoves.push(Coordinate(x - 1, y));
-            } else {
-                setAltMoves(LEFT, x, y, currShipMove);
-            }
-        } else if (x > prevShipMove.x) {
-            if (x < 9 && !isPosHit(x + 1, y)) {
-                currMoves.push(Coordinate(x + 1, y));
-            } else {
-                setAltMoves(RIGHT, x, y, currShipMove);
-            }
+        // Get the direction in respect with the previously hit position.
+        Direction dir = getDirection(currShipMove, prevShipMove);
+
+        switch(dir) {
+            case UP:
+                // Continue the direction if it's still in bounds and 
+                // if the next position hasn't been hit.
+                if (y > 0 && !isPosHit(x, y - 1)) {
+                    currMoves.push(Coordinate(x, y - 1));
+                } else {
+                    // Otherwise, set moves to sink the ship.
+                    setAltMoves(UP, currShipMove);
+                }
+                break;
+            case DOWN:
+                if (y < 9 && !isPosHit(x, y + 1)) {
+                    currMoves.push(Coordinate(x, y + 1));
+                } else {
+                    setAltMoves(DOWN, currShipMove);
+                }
+                break;
+            case LEFT:
+                if (x > 0 && !isPosHit(x - 1, y)) {
+                    currMoves.push(Coordinate(x - 1, y));
+                } else {
+                    setAltMoves(LEFT, currShipMove);
+                }
+                break;
+            case RIGHT:
+                if (x < 9 && !isPosHit(x + 1, y)) {
+                    currMoves.push(Coordinate(x + 1, y));
+                } else {
+                    setAltMoves(RIGHT, currShipMove);
+                }
+                break;
         }
     }
 }
@@ -513,23 +534,18 @@ void Battleship::backTrackShot(int x, int y) {
     string shipKey = prevShipHit.name;
     Coordinate prevShipMove = shipPosFound[shipKey].back();
 
-    // Check direction, then push in remaining moves to sink the ship.
-    if (y < prevShipMove.y) {
-        // Push moves to sink the ship.
-        setAltMoves(UP, x, y, prevShipMove);
-    } else if (y > prevShipMove.y) {
-        setAltMoves(DOWN, x, y, prevShipMove);
-    } else if (x < prevShipMove.x) {
-        setAltMoves(LEFT, x, y, prevShipMove);
-    } else if (x > prevShipMove.x) {
-        setAltMoves(RIGHT, x, y, prevShipMove);
-    }
+    // Get direction, then push in remaining moves to sink the ship.
+    Direction dir = getDirection(Coordinate(x, y), prevShipMove);
+    setAltMoves(dir, prevShipMove);
 }
 
 // Sets the moves to sink a discovered ship.
-void Battleship::setAltMoves(direction dir, int x, int y, Coordinate prevShipMove) {
+void Battleship::setAltMoves(Direction dir, Coordinate prevShipMove) {
     string shipKey = prevShipHit.name;
     queue<Coordinate> &currMoves = cpuMoves[shipKey];
+
+    int x = prevShipMove.x;
+    int y = prevShipMove.y;
 
     // Used to determine new moves.
     int timesHit = shipPosFound[shipKey].size(); // Could use length - health...
@@ -541,44 +557,44 @@ void Battleship::setAltMoves(direction dir, int x, int y, Coordinate prevShipMov
             // Based on the ship's remaining health (it has been hit at least TWICE).
             switch (prevShipHit.health) {
                 case 3:
-                    currMoves.push(Coordinate(x, prevShipMove.y + (timesHit + 2)));
+                    currMoves.push(Coordinate(x, y + (timesHit + 2)));
                 case 2:
-                    currMoves.push(Coordinate(x, prevShipMove.y + (timesHit + 1)));
+                    currMoves.push(Coordinate(x, y + (timesHit + 1)));
                 case 1:
-                    currMoves.push(Coordinate(x, prevShipMove.y + timesHit));
+                    currMoves.push(Coordinate(x, y + timesHit));
             }
             break;
         // If you went Down, go back Up.
         case DOWN:
             switch (prevShipHit.health) {
                 case 3:
-                    currMoves.push(Coordinate(x, prevShipMove.y - (timesHit + 2)));
+                    currMoves.push(Coordinate(x, y - (timesHit + 2)));
                 case 2:
-                    currMoves.push(Coordinate(x, prevShipMove.y - (timesHit + 1)));
+                    currMoves.push(Coordinate(x, y - (timesHit + 1)));
                 case 1:
-                    currMoves.push(Coordinate(x, prevShipMove.y - timesHit));
+                    currMoves.push(Coordinate(x, y - timesHit));
             }
             break;
         // If you went Left, go Right.  
         case LEFT:
             switch (prevShipHit.health) {
                 case 3:
-                    currMoves.push(Coordinate(prevShipMove.x + (timesHit + 2), y));
+                    currMoves.push(Coordinate(x + (timesHit + 2), y));
                 case 2:
-                    currMoves.push(Coordinate(prevShipMove.x + (timesHit + 1), y));
+                    currMoves.push(Coordinate(x + (timesHit + 1), y));
                 case 1:
-                    currMoves.push(Coordinate(prevShipMove.x + timesHit, y));
+                    currMoves.push(Coordinate(x + timesHit, y));
             }
             break;
         // If you went Right, go Left.
         case RIGHT:
             switch (prevShipHit.health) {
                 case 3:
-                    currMoves.push(Coordinate(prevShipMove.x - (timesHit + 2), y));
+                    currMoves.push(Coordinate(x - (timesHit + 2), y));
                 case 2:
-                    currMoves.push(Coordinate(prevShipMove.x - (timesHit + 1), y));
+                    currMoves.push(Coordinate(x - (timesHit + 1), y));
                 case 1:
-                    currMoves.push(Coordinate(prevShipMove.x - timesHit, y));
+                    currMoves.push(Coordinate(x - timesHit, y));
             }
             break;
     }
@@ -596,8 +612,8 @@ void Battleship::setPrevShip() {
         if (cpuMoves[shipName].empty()) {
             Coordinate prevMove = shipPosFound[shipName].back();
             Coordinate firstMove = shipPosFound[shipName].front();
-            direction dir = getDirection(prevMove, firstMove);
-            setAltMoves(dir, prevMove.x, prevMove.y, prevMove);
+            Direction dir = getDirection(prevMove, firstMove);
+            setAltMoves(dir, prevMove);
         }
     } else {
         // Indicate that there are no ships to sink (for now).
@@ -606,13 +622,14 @@ void Battleship::setPrevShip() {
 }
 
 // Returns a direction based on two coordinates of a ship.
-direction Battleship::getDirection(Coordinate first, Coordinate last) {
+Direction Battleship::getDirection(Coordinate first, Coordinate last) {
     int x = first.x;
     int y = first.y;
     int prevX = last.x;
     int prevY = last.y;
-    direction dir;
+    Direction dir;
 
+    // Check and set direction.
     if (y < prevY) {
         dir = UP;
     } else if (y > prevY) {

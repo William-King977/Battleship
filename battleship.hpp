@@ -6,7 +6,7 @@
 #include <queue>
 #include <string>
 using namespace std;
-enum direction {UP, DOWN, LEFT, RIGHT};
+enum Direction {UP, DOWN, LEFT, RIGHT};
 
 // Holds data (and status) of each ship.
 struct Ship {
@@ -52,13 +52,13 @@ class Battleship {
         void placeShips(char** &board, unordered_map<char, Ship> &ships);
         void getShipsFromFile(string fileName, char** &currBoard);
         void setShipData(unordered_map<char, Ship> &ships);
-        vector<direction> getDirections(int x, int y, int shipLength, char** board);
-        void enemyShoot();
+        vector<Direction> getValidDirections(int x, int y, int shipLength, char** board);
+        void cpuShoot();
         void setCpuMoves(int x, int y, Ship thatShip);
         void backTrackShot(int x, int y);
-        void setAltMoves(direction dir, int x, int y, Coordinate prevShipMove);
+        void setAltMoves(Direction dir, Coordinate prevShipMove);
         void setPrevShip();
-        direction getDirection(Coordinate first, Coordinate last);
+        Direction getDirection(Coordinate first, Coordinate last);
         bool isPosHit(int x, int y);
 };
 
