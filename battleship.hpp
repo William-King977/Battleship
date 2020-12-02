@@ -1,19 +1,13 @@
 #ifndef BATTLESHIP_HPP
 #define BATTLESHIP_HPP
 
+#include "ship.hpp"
 #include <vector>
 #include <unordered_map>
 #include <queue>
 #include <string>
 using namespace std;
 enum Direction {UP, DOWN, LEFT, RIGHT};
-
-// Holds data (and status) of each ship.
-struct Ship {
-    string name;
-    int length;
-    int health;
-};
 
 // Co-ordinates for possible CPU moves.
 struct Coordinate {
@@ -49,10 +43,13 @@ class Battleship {
         unordered_map<string, queue<Coordinate>> cpuMoves; // Moves to sink the ship(s) found.
 
         // Methods.
+        // Ship placements.
         void placeShips(char** &board, unordered_map<char, Ship> &ships);
         void getShipsFromFile(string fileName, char** &currBoard);
         void setShipData(unordered_map<char, Ship> &ships);
         vector<Direction> getValidDirections(int x, int y, int shipLength, char** board);
+
+        // CPU methods.
         void cpuShoot();
         void setCpuMoves(int x, int y, Ship thatShip);
         void backTrackShot(int x, int y);

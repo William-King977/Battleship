@@ -36,7 +36,7 @@ void Battleship::startGame(int numPlayers, bool loadP1ShipFile, bool loadP2ShipF
     p1ShipCount = 5;
     p2ShipCount = 5;
     isFinished = false;
-    Ship prevShipHit = {"", 0, 0}; // Used for back tracking.
+    Ship prevShipHit; // Used for back tracking.
 
     for (int i = 0; i < 10; i++) {
         p1Board[i] = new char[10];
@@ -312,22 +312,22 @@ void Battleship::shoot(char charX, int y) {
     if (shipHit) {
         // Get the ship that was hit.
         Ship &thatShip = currShips[shipType];
-        thatShip.health--;
+        thatShip.setHealth(thatShip.getHealth() - 1);
         // Display a suitable message.
         if (numPlayers == 1) {
-            cout << "You've hit the enemy's " << thatShip.name << '.' << endl;
+            cout << "You've hit the enemy's " << thatShip.getName() << '.' << endl;
         } else {
-            cout << "You've hit " << enemyPlayer << "'s " << thatShip.name << '.' << endl;
+            cout << "You've hit " << enemyPlayer << "'s " << thatShip.getName() << '.' << endl;
         }
 
         // If the resulting hit sunk the ship.
-        if (thatShip.health == 0) {
+        if (thatShip.getHealth() == 0) {
             currShipCount--;
             // Display a suitable message.
             if (numPlayers == 1) {
-                cout << "You've sunk the enemy's " << thatShip.name << '.' << endl;
+                cout << "You've sunk the enemy's " << thatShip.getName() << '.' << endl;
             } else {
-                cout << "You've sunk " << enemyPlayer << "'s " << thatShip.name << '.' << endl;
+                cout << "You've sunk " << enemyPlayer << "'s " << thatShip.getName() << '.' << endl;
             }
         }
     }
@@ -398,8 +398,9 @@ void Battleship::cpuShoot() {
             cout << "Nothing was hit." << endl;
             // If there is a ship that has been hit (but not sunk),
             // then push the remaining moves to sink it.
-            if ((prevShipHit.name.length()) > 0)
+            if ((prevShipHit.getName()).length() > 0) {
                 backTrackShot(x, y);
+            }
             break;
         default:
             // The position was already hit.
@@ -415,16 +416,16 @@ void Battleship::cpuShoot() {
     if (shipHit) {
         // Get the ship that was hit.
         Ship &thatShip = p1Ships[shipType];
-        thatShip.health--;
-        cout << "Your " << thatShip.name << " has been hit." << endl;
+        thatShip.setHealth(thatShip.getHealth() - 1);
+        cout << "Your " << thatShip.getName() << " has been hit." << endl;
 
         // If the resulting hit sunk the ship.
-        if (thatShip.health == 0) {
-            cout << "Your " << thatShip.name << " has sunk!" << endl;
+        if (thatShip.getHealth() == 0) {
+            cout << "Your " << thatShip.getName() << " has sunk!" << endl;
             p1ShipCount--;
             // Remove ship from the maps.
-            shipPosFound.erase(thatShip.name);
-            cpuMoves.erase(thatShip.name);
+            shipPosFound.erase(thatShip.getName());
+            cpuMoves.erase(thatShip.getName());
             // Sets the next previous ship to sink.
             setPrevShip();
         // Only add moves if the ship has not sunk.
@@ -446,7 +447,7 @@ void Battleship::cpuShoot() {
 
 // Sets the possible moves for the CPU after a ship is hit.
 void Battleship::setCpuMoves(int x, int y, Ship thatShip) {
-    string shipKey = thatShip.name;
+    string shipKey = thatShip.getName();
 
     // If the key (ship) doesn't exist.
     if (shipPosFound.find(shipKey) == shipPosFound.end()) {
@@ -457,7 +458,7 @@ void Battleship::setCpuMoves(int x, int y, Ship thatShip) {
 
         // NOTE: if a shot is missed (after this turn) when trying to find
         // the ship position, backtracking won't occur.
-        prevShipHit.name = "";
+        prevShipHit.setName("");
 
         // Create possible moves queue.
         queue<Coordinate> possibleMoves;
@@ -531,7 +532,7 @@ void Battleship::setCpuMoves(int x, int y, Ship thatShip) {
 
 // Adjusts the possible moves when missing a shot while trying to sink a ship.
 void Battleship::backTrackShot(int x, int y) {
-    string shipKey = prevShipHit.name;
+    string shipKey = prevShipHit.getName();
     Coordinate prevShipMove = shipPosFound[shipKey].back();
 
     // Get direction, then push in remaining moves to sink the ship.
@@ -541,7 +542,7 @@ void Battleship::backTrackShot(int x, int y) {
 
 // Sets the moves to sink a discovered ship.
 void Battleship::setAltMoves(Direction dir, Coordinate prevShipMove) {
-    string shipKey = prevShipHit.name;
+    string shipKey = prevShipHit.getName();
     queue<Coordinate> &currMoves = cpuMoves[shipKey];
 
     int x = prevShipMove.x;
@@ -555,7 +556,7 @@ void Battleship::setAltMoves(Direction dir, Coordinate prevShipMove) {
         // If you went Up, go back Down.
         case UP:
             // Based on the ship's remaining health (it has been hit at least TWICE).
-            switch (prevShipHit.health) {
+            switch (prevShipHit.getHealth()) {
                 case 3:
                     currMoves.push(Coordinate(x, y + (timesHit + 2)));
                 case 2:
@@ -566,7 +567,7 @@ void Battleship::setAltMoves(Direction dir, Coordinate prevShipMove) {
             break;
         // If you went Down, go back Up.
         case DOWN:
-            switch (prevShipHit.health) {
+            switch (prevShipHit.getHealth()) {
                 case 3:
                     currMoves.push(Coordinate(x, y - (timesHit + 2)));
                 case 2:
@@ -577,7 +578,7 @@ void Battleship::setAltMoves(Direction dir, Coordinate prevShipMove) {
             break;
         // If you went Left, go Right.  
         case LEFT:
-            switch (prevShipHit.health) {
+            switch (prevShipHit.getHealth()) {
                 case 3:
                     currMoves.push(Coordinate(x + (timesHit + 2), y));
                 case 2:
@@ -588,7 +589,7 @@ void Battleship::setAltMoves(Direction dir, Coordinate prevShipMove) {
             break;
         // If you went Right, go Left.
         case RIGHT:
-            switch (prevShipHit.health) {
+            switch (prevShipHit.getHealth()) {
                 case 3:
                     currMoves.push(Coordinate(x - (timesHit + 2), y));
                 case 2:
@@ -617,7 +618,7 @@ void Battleship::setPrevShip() {
         }
     } else {
         // Indicate that there are no ships to sink (for now).
-        prevShipHit.name = "";
+        prevShipHit.setName("");
     }
 }
 

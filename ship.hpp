@@ -4,7 +4,7 @@
 #include <string>
 using namespace std;
 
-// Holds data (and status) of each ship.
+// Holds data of a ship.
 class Ship {
     private:
         string name;
@@ -12,16 +12,19 @@ class Ship {
         int health;
     
     public:
-        Ship() : name(""), length(0), health(0) { }
-        Ship(string name, int length, int health) : name(name), length(length), health(health) { } 
+        Ship();
+        Ship(string name, int length, int health);
+        ~Ship();
 
-        string getName() { return name; }
-        int getLength() { return length; }
-        int getHealth() { return health; }
+        // Getters.
+        string getName();
+        int getLength();
+        int getHealth();
 
-        void setName(string name) { this->name = name; }
-        void setLength(int length) { this->length = length; }
-        void setHealth(int health) { this->health = health; }
+        // Setters.
+        void setName(string name);
+        void setLength(int length);
+        void setHealth(int health);
 };
 
 #endif
