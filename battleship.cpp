@@ -370,8 +370,8 @@ void Battleship::cpuShoot() {
         // because it's from an unordered map, but it doesn't matter).
         string shipKey = cpuMoves.begin()->first;
         queue<Coordinate> &shipMoves = cpuMoves[shipKey];
-        x = shipMoves.front().x;
-        y = shipMoves.front().y;
+        x = shipMoves.front().getX();
+        y = shipMoves.front().getY();
         shipMoves.pop();
     } else {
         x = rand() % 10;
@@ -545,8 +545,8 @@ void Battleship::setAltMoves(Direction dir, Coordinate prevShipMove) {
     string shipKey = prevShipHit.getName();
     queue<Coordinate> &currMoves = cpuMoves[shipKey];
 
-    int x = prevShipMove.x;
-    int y = prevShipMove.y;
+    int x = prevShipMove.getX();
+    int y = prevShipMove.getY();
 
     // Used to determine new moves.
     int timesHit = shipPosFound[shipKey].size(); // Could use length - health...
@@ -624,10 +624,10 @@ void Battleship::setPrevShip() {
 
 // Returns a direction based on two coordinates of a ship.
 Direction Battleship::getDirection(Coordinate first, Coordinate last) {
-    int x = first.x;
-    int y = first.y;
-    int prevX = last.x;
-    int prevY = last.y;
+    int x = first.getX();
+    int y = first.getY();
+    int prevX = last.getX();
+    int prevY = last.getY();
     Direction dir;
 
     // Check and set direction.

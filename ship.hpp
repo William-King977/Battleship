@@ -23,7 +23,6 @@ class Ship {
 
         // Setters.
         void setName(string name);
-        void setLength(int length);
         void setHealth(int health);
 };
 

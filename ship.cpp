@@ -28,12 +28,9 @@ int Ship::getHealth() {
     return health; 
 }
 
-// Setters for each variable.
+// Setters.
 void Ship::setName(string name) { 
     this->name = name; 
-}
-void Ship::setLength(int length) { 
-    this->length = length; 
 }       
 void Ship::setHealth(int health) { 
     this->health = health;

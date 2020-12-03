@@ -2,19 +2,13 @@
 #define BATTLESHIP_HPP
 
 #include "ship.hpp"
+#include "coordinate.hpp"
 #include <vector>
 #include <unordered_map>
 #include <queue>
 #include <string>
 using namespace std;
 enum Direction {UP, DOWN, LEFT, RIGHT};
-
-// Co-ordinates for possible CPU moves.
-struct Coordinate {
-    int x;
-    int y;
-    Coordinate(int newX, int newY) : x(newX), y(newY) { }
-};
 
 class Battleship {
     public:
