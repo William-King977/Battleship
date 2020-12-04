@@ -472,7 +472,7 @@ void Battleship::setCpuMoves(int x, int y, Ship thatShip) {
             possibleMoves.push(Coordinate(x, y + 1));
         if (x > 0  && !isPosHit(x - 1, y))
             possibleMoves.push(Coordinate(x - 1, y));
-        if (x < 9  && !isPosHit(x + 2, y))
+        if (x < 9  && !isPosHit(x + 1, y))
             possibleMoves.push(Coordinate(x + 1, y));
         cpuMoves[shipKey] = possibleMoves;
 
