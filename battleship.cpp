@@ -451,29 +451,51 @@ void Battleship::setCpuMoves(int x, int y, Ship thatShip) {
 
     // If the key (ship) doesn't exist.
     if (shipPosFound.find(shipKey) == shipPosFound.end()) {
-        // Create hit position queue.
-        queue<Coordinate> hitPos;
-        hitPos.push(Coordinate(x, y));
-        shipPosFound[shipKey] = hitPos;
+        // Create hit position queue (positions hit on the ship).
+        queue<Coordinate> shipHitPos;
+        Coordinate newPos(x, y);
+        shipHitPos.push(newPos);
+        shipPosFound[shipKey] = shipHitPos;
 
         // NOTE: if a shot is missed (after this turn) when trying to find
         // the ship position, backtracking won't occur.
         prevShipHit.setName("");
 
-        // Create possible moves queue.
+        // Create possible moves queue (for cpuMoves).
         queue<Coordinate> possibleMoves;
         
+        // These positions will be used as temperary boundaries.
+        char tempUpChar = '\0';
+        char tempLeftChar = '\0';
+
         // Up, down, left, right (respectively).
-        // Adds positions around where the ship was hit (don't push positions already hit).
+        // Adds positions around where the ship was hit.
         // We don't know where the ship is positioned at this point.
-        if (y > 0 && !isPosHit(x, y - 1))
+        if (y > 0 && !isPosHit(x, y - 1) && canShipExist(thatShip.getLength(), newPos, UP)) {
+            // Temporarily mark it to adjust the 'boundaries' for the opposite direction.
+            tempUpChar = p1Board[y - 1][x];
+            p1Board[y - 1][x] = 'O';
             possibleMoves.push(Coordinate(x, y - 1));
-        if (y < 9  && !isPosHit(x, y + 1)) 
+        }
+        if (y < 9  && !isPosHit(x, y + 1) && canShipExist(thatShip.getLength(), newPos, DOWN)) {
             possibleMoves.push(Coordinate(x, y + 1));
-        if (x > 0  && !isPosHit(x - 1, y))
+        }
+        if (x > 0  && !isPosHit(x - 1, y) && canShipExist(thatShip.getLength(), newPos, LEFT)) {
+            tempLeftChar = p1Board[y][x - 1];
+            p1Board[y][x - 1] = 'O';
             possibleMoves.push(Coordinate(x - 1, y));
-        if (x < 9  && !isPosHit(x + 1, y))
+        }
+        if (x < 9  && !isPosHit(x + 1, y) && canShipExist(thatShip.getLength(), newPos, RIGHT)) {
             possibleMoves.push(Coordinate(x + 1, y));
+        }
+
+        // Put back the characters and allocate the moves queue.
+        if (tempUpChar != '\0') {
+            p1Board[y - 1][x] = tempUpChar;
+        }
+        if (tempLeftChar != '\0') {
+            p1Board[y][x - 1] = tempLeftChar;
+        }
         cpuMoves[shipKey] = possibleMoves;
 
     // Otherwise, push the coordinates into the existing queues.
@@ -641,6 +663,63 @@ Direction Battleship::getDirection(Coordinate first, Coordinate last) {
         dir = RIGHT;
     }
     return dir;
+}
+
+// Checks if a ship's existence is possible in a given direction.
+bool Battleship::canShipExist(int shipLength, Coordinate currPos, Direction dir) {
+    bool upperInBounds = true;
+    bool lowerInBounds = true;
+    int upperBound;
+    int lowerBound;
+    switch (dir) {
+        case UP:
+        case DOWN:
+            upperBound = currPos.getY();
+            lowerBound = currPos.getY();
+            for (int i = 1; i < shipLength; i++) {
+                int upPos = currPos.getY() - i;
+                int downPos = currPos.getY() + i;
+                // UP
+                if (!isPosHit(currPos.getX(), upPos) && lowerInBounds && upPos >= 0) {
+                    lowerBound--;
+                } else {
+                    lowerInBounds = false;
+                }
+                
+                // DOWN
+                if (!isPosHit(currPos.getX(), downPos) && upperInBounds && downPos <= 9) {
+                    upperBound++;
+                } else {
+                    upperInBounds = false;
+                }
+            }
+            break;
+        case LEFT:
+        case RIGHT:
+            upperBound = currPos.getX();
+            lowerBound = currPos.getX();
+            for (int i = 1; i < shipLength; i++) {
+                int leftPos = currPos.getX() - i;
+                int rightPos = currPos.getX() + i;
+                // LEFT
+                if (!isPosHit(leftPos, currPos.getY()) && lowerInBounds && leftPos >= 0) {
+                    lowerBound--;
+                } else {
+                    lowerInBounds = false;
+                }
+                
+                // RIGHT
+                if (!isPosHit(rightPos, currPos.getY()) && upperInBounds && rightPos <= 9) {
+                    upperBound++;
+                } else {
+                    upperInBounds = false;
+                }
+            }
+            break;
+    }
+    int innerBound = upperBound - lowerBound;
+    bool placementPossible = (innerBound + 1) >= shipLength ? true : false;
+    return placementPossible;
 }
 
 // Checks if the next position has been hit already.
