@@ -46,6 +46,8 @@ class Battleship {
         // CPU methods.
         void cpuShoot();
         void setCpuMoves(int x, int y, Ship thatShip);
+        void findShip(int x, int y, Ship thatShip);
+        void sinkShip(int x, int y, Ship thatShip);
         void backTrackShot(int x, int y);
         void setAltMoves(Direction dir, Coordinate prevShipMove);
         void setPrevShip();

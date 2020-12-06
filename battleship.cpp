@@ -447,108 +447,115 @@ void Battleship::cpuShoot() {
 
 // Sets the possible moves for the CPU after a ship is hit.
 void Battleship::setCpuMoves(int x, int y, Ship thatShip) {
-    string shipKey = thatShip.getName();
-
-    // If the key (ship) doesn't exist.
-    if (shipPosFound.find(shipKey) == shipPosFound.end()) {
-        // Create hit position queue (positions hit on the ship).
-        queue<Coordinate> shipHitPos;
-        Coordinate newPos(x, y);
-        shipHitPos.push(newPos);
-        shipPosFound[shipKey] = shipHitPos;
-
-        // NOTE: if a shot is missed (after this turn) when trying to find
-        // the ship position, backtracking won't occur.
-        prevShipHit.setName("");
-
-        // Create possible moves queue (for cpuMoves).
-        queue<Coordinate> possibleMoves;
-        
-        // These positions will be used as temperary boundaries.
-        char tempUpChar = '\0';
-        char tempLeftChar = '\0';
-
-        // Up, down, left, right (respectively).
-        // Adds positions around where the ship was hit.
-        // We don't know where the ship is positioned at this point.
-        if (y > 0 && !isPosHit(x, y - 1) && canShipExist(thatShip.getLength(), newPos, UP)) {
-            // Temporarily mark it to adjust the 'boundaries' for the opposite direction.
-            tempUpChar = p1Board[y - 1][x];
-            p1Board[y - 1][x] = 'O';
-            possibleMoves.push(Coordinate(x, y - 1));
-        }
-        if (y < 9  && !isPosHit(x, y + 1) && canShipExist(thatShip.getLength(), newPos, DOWN)) {
-            possibleMoves.push(Coordinate(x, y + 1));
-        }
-        if (x > 0  && !isPosHit(x - 1, y) && canShipExist(thatShip.getLength(), newPos, LEFT)) {
-            tempLeftChar = p1Board[y][x - 1];
-            p1Board[y][x - 1] = 'O';
-            possibleMoves.push(Coordinate(x - 1, y));
-        }
-        if (x < 9  && !isPosHit(x + 1, y) && canShipExist(thatShip.getLength(), newPos, RIGHT)) {
-            possibleMoves.push(Coordinate(x + 1, y));
-        }
-
-        // Put back the characters and allocate the moves queue.
-        if (tempUpChar != '\0') {
-            p1Board[y - 1][x] = tempUpChar;
-        }
-        if (tempLeftChar != '\0') {
-            p1Board[y][x - 1] = tempLeftChar;
-        }
-        cpuMoves[shipKey] = possibleMoves;
-
-    // Otherwise, push the coordinates into the existing queues.
+    // If the key (ship) doesn't exist, try and find the ship's direction.
+    if (shipPosFound.find(thatShip.getName()) == shipPosFound.end()) {
+        findShip(x, y, thatShip);
+    // Otherwise, push the coordinates into the existing queues (to sink the ship).
     } else {
-        //Adjust cpuMoves.
-        queue<Coordinate> &currMoves = cpuMoves[shipKey];
+        sinkShip(x, y, thatShip);
+    }
+}
 
-        // If the ship was hit once previously, then remove the blank moves (for this ship).
-        if (shipPosFound[shipKey].size() == 1)
-            currMoves = {};
+// Pushes in moves that are used to find a ship's direction.
+void Battleship::findShip(int x, int y, Ship thatShip) {
+    // Create hit position queue (positions hit on the ship).
+    queue<Coordinate> shipHitPos;
+    Coordinate newPos(x, y);
+    shipHitPos.push(newPos);
+    shipPosFound[thatShip.getName()] = shipHitPos;
 
-        Coordinate prevShipMove = shipPosFound[shipKey].back();
-        Coordinate currShipMove(x, y);
-        shipPosFound[shipKey].push(currShipMove);
+    // NOTE: if a shot is missed (after this turn) when trying to find
+    // the ship's position, backtracking won't occur.
+    prevShipHit.setName("");
 
-        prevShipHit = thatShip; // Used if backtracking is needed.
+    // Create possible moves queue (for cpuMoves).
+    queue<Coordinate> possibleMoves;
+        
+    // These positions will be used as temperary boundaries.
+    char tempUpChar = '\0';
+    char tempLeftChar = '\0';
 
-        // Get the direction in respect with the previously hit position.
-        Direction dir = getDirection(currShipMove, prevShipMove);
+    // Up, down, left, right (respectively).
+    // Adds positions around where the ship was hit.
+    // We don't know where the ship is positioned at this point.
+    if (y > 0 && !isPosHit(x, y - 1) && canShipExist(thatShip.getLength(), newPos, UP)) {
+        // Temporarily mark it to adjust the 'boundaries' for the opposite direction.
+        tempUpChar = p1Board[y - 1][x];
+        p1Board[y - 1][x] = 'O';
+        possibleMoves.push(Coordinate(x, y - 1));
+    }
+    if (y < 9  && !isPosHit(x, y + 1) && canShipExist(thatShip.getLength(), newPos, DOWN)) {
+        possibleMoves.push(Coordinate(x, y + 1));
+    }
+    if (x > 0  && !isPosHit(x - 1, y) && canShipExist(thatShip.getLength(), newPos, LEFT)) {
+        tempLeftChar = p1Board[y][x - 1];
+        p1Board[y][x - 1] = 'O';
+        possibleMoves.push(Coordinate(x - 1, y));
+    }
+    if (x < 9  && !isPosHit(x + 1, y) && canShipExist(thatShip.getLength(), newPos, RIGHT)) {
+        possibleMoves.push(Coordinate(x + 1, y));
+    }
 
-        switch(dir) {
-            case UP:
-                // Continue the direction if it's still in bounds and 
-                // if the next position hasn't been hit.
-                if (y > 0 && !isPosHit(x, y - 1)) {
-                    currMoves.push(Coordinate(x, y - 1));
-                } else {
-                    // Otherwise, set moves to sink the ship.
-                    setAltMoves(UP, currShipMove);
-                }
-                break;
-            case DOWN:
-                if (y < 9 && !isPosHit(x, y + 1)) {
-                    currMoves.push(Coordinate(x, y + 1));
-                } else {
-                    setAltMoves(DOWN, currShipMove);
-                }
-                break;
-            case LEFT:
-                if (x > 0 && !isPosHit(x - 1, y)) {
-                    currMoves.push(Coordinate(x - 1, y));
-                } else {
-                    setAltMoves(LEFT, currShipMove);
-                }
-                break;
-            case RIGHT:
-                if (x < 9 && !isPosHit(x + 1, y)) {
-                    currMoves.push(Coordinate(x + 1, y));
-                } else {
-                    setAltMoves(RIGHT, currShipMove);
-                }
-                break;
-        }
+    // Put back the characters and allocate the moves queue.
+    if (tempUpChar != '\0') {
+        p1Board[y - 1][x] = tempUpChar;
+    }
+    if (tempLeftChar != '\0') {
+        p1Board[y][x - 1] = tempLeftChar;
+    }
+    cpuMoves[thatShip.getName()] = possibleMoves;
+}
+
+// Push in moves that are used to sink a ship.
+void Battleship::sinkShip(int x, int y, Ship thatShip) {
+    //Adjust cpuMoves.
+    queue<Coordinate> &currMoves = cpuMoves[thatShip.getName()];
+
+    // If the ship was hit once previously, then remove the blank moves (for this ship).
+    if (shipPosFound[thatShip.getName()].size() == 1)
+        currMoves = {};
+
+    Coordinate prevShipMove = shipPosFound[thatShip.getName()].back();
+    Coordinate currShipMove(x, y);
+    shipPosFound[thatShip.getName()].push(currShipMove);
+
+    prevShipHit = thatShip; // Used if backtracking is needed.
+
+    // Get the direction in respect with the previously hit position.
+    Direction dir = getDirection(currShipMove, prevShipMove);
+
+    switch(dir) {
+        case UP:
+            // Continue the direction if it's still in bounds and 
+            // if the next position hasn't been hit.
+            if (y > 0 && !isPosHit(x, y - 1)) {
+                currMoves.push(Coordinate(x, y - 1));
+            } else {
+                // Otherwise, set moves to sink the ship.
+                setAltMoves(UP, currShipMove);
+            }
+            break;
+        case DOWN:
+            if (y < 9 && !isPosHit(x, y + 1)) {
+                currMoves.push(Coordinate(x, y + 1));
+            } else {
+                setAltMoves(DOWN, currShipMove);
+            }
+            break;
+        case LEFT:
+            if (x > 0 && !isPosHit(x - 1, y)) {
+                currMoves.push(Coordinate(x - 1, y));
+            } else {
+                setAltMoves(LEFT, currShipMove);
+            }
+            break;
+        case RIGHT:
+            if (x < 9 && !isPosHit(x + 1, y)) {
+                currMoves.push(Coordinate(x + 1, y));
+            } else {
+                setAltMoves(RIGHT, currShipMove);
+            }
+            break;
     }
 }
 
@@ -671,6 +678,7 @@ bool Battleship::canShipExist(int shipLength, Coordinate currPos, Direction dir)
     bool lowerInBounds = true;
     int upperBound;
     int lowerBound;
+    
     switch (dir) {
         case UP:
         case DOWN:
@@ -680,14 +688,14 @@ bool Battleship::canShipExist(int shipLength, Coordinate currPos, Direction dir)
                 int upPos = currPos.getY() - i;
                 int downPos = currPos.getY() + i;
                 // UP
-                if (!isPosHit(currPos.getX(), upPos) && lowerInBounds && upPos >= 0) {
+                if (upPos >= 0 && !isPosHit(currPos.getX(), upPos) && lowerInBounds) {
                     lowerBound--;
                 } else {
                     lowerInBounds = false;
                 }
                 
                 // DOWN
-                if (!isPosHit(currPos.getX(), downPos) && upperInBounds && downPos <= 9) {
+                if (downPos <= 9 && !isPosHit(currPos.getX(), downPos) && upperInBounds) {
                     upperBound++;
                 } else {
                     upperInBounds = false;
@@ -702,14 +710,14 @@ bool Battleship::canShipExist(int shipLength, Coordinate currPos, Direction dir)
                 int leftPos = currPos.getX() - i;
                 int rightPos = currPos.getX() + i;
                 // LEFT
-                if (!isPosHit(leftPos, currPos.getY()) && lowerInBounds && leftPos >= 0) {
+                if (leftPos >= 0 && !isPosHit(leftPos, currPos.getY()) && lowerInBounds) {
                     lowerBound--;
                 } else {
                     lowerInBounds = false;
                 }
                 
                 // RIGHT
-                if (!isPosHit(rightPos, currPos.getY()) && upperInBounds && rightPos <= 9) {
+                if (rightPos <= 9 && !isPosHit(rightPos, currPos.getY()) && upperInBounds) {
                     upperBound++;
                 } else {
                     upperInBounds = false;
