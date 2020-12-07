@@ -68,7 +68,7 @@ void Battleship::startGame(int numPlayers, bool loadP1ShipFile, bool loadP2ShipF
 }
 
 // Reads the ships from the specified file.
-void Battleship::getShipsFromFile(string fileName, char** &currBoard) {
+void Battleship::getShipsFromFile(string fileName, char** currBoard) {
     const string boardDir = "boards/" + fileName;
     ifstream boardFile(boardDir);
 
@@ -134,7 +134,7 @@ void Battleship::setShipData(unordered_map<char, Ship> &ships) {
 }
 
 // Places the ships randomly on the board and sets the data for each ship.
-void Battleship::placeShips(char** &board, unordered_map<char, Ship> &ships) {
+void Battleship::placeShips(char** board, unordered_map<char, Ship> &ships) {
     for (int i = 5; i > 0; i--) {
         int x = rand() % 10;
         int y = rand() % 10;
@@ -270,7 +270,7 @@ vector<Direction> Battleship::getValidDirections(int x, int y, int shipLength, c
 // Takes the player's co-ordinates to perform their turn.
 void Battleship::shoot(char charX, int y) {
     // Set the current board, ships and ship count.
-    char** &currBoard = (currPlayer == 1) ? p2Board : p1Board;
+    char** currBoard = (currPlayer == 1) ? p2Board : p1Board;
     unordered_map<char, Ship> &currShips = (currPlayer == 1) ? p2Ships : p1Ships;
     int &currShipCount = (currPlayer == 1) ? p2ShipCount : p1ShipCount;
 
@@ -360,12 +360,24 @@ void Battleship::shoot(char charX, int y) {
 void Battleship::cpuShoot() {
     int x;
     int y;
-
+    
     if (!cpuMoves.empty()) {
-        // Get possible moves for the first ship (could be any
-        // because it's from an unordered map, but it doesn't matter).
+        // Get possible moves for a damaged, but unsunk ship.
         string shipKey = cpuMoves.begin()->first;
         queue<Coordinate> &shipMoves = cpuMoves[shipKey];
+
+        // If there are no moves, then push the moves to sink it.
+        if (shipMoves.size() == 0) {
+            // setAltMoves() needs this.
+            prevShipHit = p1Ships[shipKey[0]];
+            Coordinate first = shipPosFound[shipKey].front();
+            Coordinate last = shipPosFound[shipKey].back();
+            // Direction of the ship being shot before going on another ship.
+            setAltMoves(getDirection(last, first), last);
+            cpuShoot();
+            return;
+        }
+
         x = shipMoves.front().getX();
         y = shipMoves.front().getY();
         shipMoves.pop();
@@ -373,7 +385,7 @@ void Battleship::cpuShoot() {
         x = rand() % 10;
         y = rand() % 10;
     }
-
+    
     bool shipHit = false;
     char shipType;
 
