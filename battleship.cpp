@@ -478,21 +478,21 @@ void Battleship::findShip(int x, int y, Ship thatShip) {
     // Up, down, left, right (respectively).
     // Adds positions around where the ship was hit.
     // We don't know where the ship is positioned at this point.
-    if (y > 0 && !isPosHit(x, y - 1) && canShipExist(thatShip.getLength(), newPos, UP)) {
+    if (y > 0 && !isPosHit(p1Board[y - 1][x]) && canShipExist(thatShip.getLength(), newPos, UP)) {
         // Temporarily mark it to adjust the 'boundaries' for the opposite direction.
         tempUpChar = p1Board[y - 1][x];
         p1Board[y - 1][x] = 'O';
         possibleMoves.push(Coordinate(x, y - 1));
     }
-    if (y < 9  && !isPosHit(x, y + 1) && canShipExist(thatShip.getLength(), newPos, DOWN)) {
+    if (y < 9  && !isPosHit(p1Board[y + 1][x]) && canShipExist(thatShip.getLength(), newPos, DOWN)) {
         possibleMoves.push(Coordinate(x, y + 1));
     }
-    if (x > 0  && !isPosHit(x - 1, y) && canShipExist(thatShip.getLength(), newPos, LEFT)) {
+    if (x > 0  && !isPosHit(p1Board[y][x - 1]) && canShipExist(thatShip.getLength(), newPos, LEFT)) {
         tempLeftChar = p1Board[y][x - 1];
         p1Board[y][x - 1] = 'O';
         possibleMoves.push(Coordinate(x - 1, y));
     }
-    if (x < 9  && !isPosHit(x + 1, y) && canShipExist(thatShip.getLength(), newPos, RIGHT)) {
+    if (x < 9  && !isPosHit(p1Board[y][x + 1]) && canShipExist(thatShip.getLength(), newPos, RIGHT)) {
         possibleMoves.push(Coordinate(x + 1, y));
     }
 
@@ -528,7 +528,7 @@ void Battleship::sinkShip(int x, int y, Ship thatShip) {
         case UP:
             // Continue the direction if it's still in bounds and 
             // if the next position hasn't been hit.
-            if (y > 0 && !isPosHit(x, y - 1)) {
+            if (y > 0 && !isPosHit(p1Board[y - 1][x])) {
                 currMoves.push(Coordinate(x, y - 1));
             } else {
                 // Otherwise, set moves to sink the ship.
@@ -536,21 +536,21 @@ void Battleship::sinkShip(int x, int y, Ship thatShip) {
             }
             break;
         case DOWN:
-            if (y < 9 && !isPosHit(x, y + 1)) {
+            if (y < 9 && !isPosHit(p1Board[y + 1][x])) {
                 currMoves.push(Coordinate(x, y + 1));
             } else {
                 setAltMoves(DOWN, currShipMove);
             }
             break;
         case LEFT:
-            if (x > 0 && !isPosHit(x - 1, y)) {
+            if (x > 0 && !isPosHit(p1Board[y][x - 1])) {
                 currMoves.push(Coordinate(x - 1, y));
             } else {
                 setAltMoves(LEFT, currShipMove);
             }
             break;
         case RIGHT:
-            if (x < 9 && !isPosHit(x + 1, y)) {
+            if (x < 9 && !isPosHit(p1Board[y][x + 1])) {
                 currMoves.push(Coordinate(x + 1, y));
             } else {
                 setAltMoves(RIGHT, currShipMove);
@@ -688,14 +688,14 @@ bool Battleship::canShipExist(int shipLength, Coordinate currPos, Direction dir)
                 int upPos = currPos.getY() - i;
                 int downPos = currPos.getY() + i;
                 // UP
-                if (upPos >= 0 && !isPosHit(currPos.getX(), upPos) && lowerInBounds) {
+                if (upPos >= 0 && !isPosHit(p1Board[upPos][currPos.getX()]) && lowerInBounds) {
                     lowerBound--;
                 } else {
                     lowerInBounds = false;
                 }
                 
                 // DOWN
-                if (downPos <= 9 && !isPosHit(currPos.getX(), downPos) && upperInBounds) {
+                if (downPos <= 9 && !isPosHit(p1Board[downPos][currPos.getX()]) && upperInBounds) {
                     upperBound++;
                 } else {
                     upperInBounds = false;
@@ -710,14 +710,14 @@ bool Battleship::canShipExist(int shipLength, Coordinate currPos, Direction dir)
                 int leftPos = currPos.getX() - i;
                 int rightPos = currPos.getX() + i;
                 // LEFT
-                if (leftPos >= 0 && !isPosHit(leftPos, currPos.getY()) && lowerInBounds) {
+                if (leftPos >= 0 && !isPosHit(p1Board[currPos.getY()][leftPos]) && lowerInBounds) {
                     lowerBound--;
                 } else {
                     lowerInBounds = false;
                 }
                 
                 // RIGHT
-                if (rightPos <= 9 && !isPosHit(rightPos, currPos.getY()) && upperInBounds) {
+                if (rightPos <= 9 && !isPosHit(p1Board[currPos.getY()][rightPos]) && upperInBounds) {
                     upperBound++;
                 } else {
                     upperInBounds = false;
@@ -730,10 +730,9 @@ bool Battleship::canShipExist(int shipLength, Coordinate currPos, Direction dir)
     return placementPossible;
 }
 
-// Checks if the next position has been hit already.
-// Used for the CPU.
-bool Battleship::isPosHit(int x, int y) {
-    switch (p1Board[y][x]) {
+// Checks if a position has been hit.
+bool Battleship::isPosHit(char boardPiece) {
+    switch (boardPiece) {
         case 'X':
         case 'O':
             return true;
@@ -751,14 +750,9 @@ void Battleship::showBoard() {
     for (int i = 0; i < 10; i++) {
         // Print line of the first board.
         for (int j = 0; j < 10; j++) {
-            // Hide P1's ships if it's a two player game.
-            char currPiece = (numPlayers == 2) ? emptySpace : p1Board[i][j];
-            switch (p1Board[i][j]) {
-                case 'X':
-                case 'O':
-                    currPiece = p1Board[i][j];
-                    break;
-            }
+            // Show P1's ships if it's hit or if it's a single player game.
+            char currPiece = ((numPlayers == 1) || isPosHit(p1Board[i][j])) ? p1Board[i][j] : emptySpace;
+            
             if (j == 0 && i == 9) {
                 cout << i + 1 << " | " << currPiece << ' ';
             } else if (j == 0) {
@@ -770,14 +764,9 @@ void Battleship::showBoard() {
 
         // Print line of the second board.
         for (int j = 0; j < 10; j++) {
-            // Hide the opponents ships.
-            char currPiece = emptySpace;
-            switch (p2Board[i][j]) {
-                case 'X':
-                case 'O':
-                    currPiece = p2Board[i][j];
-                    break;
-            }
+            // Hide the opponents ships if they're not hit.
+            char currPiece = isPosHit(p2Board[i][j]) ? p2Board[i][j] : emptySpace;
+            
             if (j == 0 && i == 9) {
                 cout << " | " << i + 1 << " | " << currPiece << ' ';
             } else if (j == 0) {

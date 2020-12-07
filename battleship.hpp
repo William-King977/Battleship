@@ -48,12 +48,13 @@ class Battleship {
         void setCpuMoves(int x, int y, Ship thatShip);
         void findShip(int x, int y, Ship thatShip);
         void sinkShip(int x, int y, Ship thatShip);
+        
         void backTrackShot(int x, int y);
         void setAltMoves(Direction dir, Coordinate prevShipMove);
         void setPrevShip();
         Direction getDirection(Coordinate first, Coordinate last);
         bool canShipExist(int shipLength, Coordinate currPos, Direction dir);
-        bool isPosHit(int x, int y);
+        bool isPosHit(char boardPiece);
 };
 
 #endif
