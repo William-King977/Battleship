@@ -233,22 +233,18 @@ vector<Direction> Battleship::getValidDirections(int x, int y, int shipLength, c
         if ((y - shipLength < 0) || board[y - j][x] != emptySpace) {
             upValid = false;
         }
-
         // DOWN
         if ((y + shipLength > 9) || board[y + j][x] != emptySpace) {
             downValid = false;
         }
-
         // LEFT
         if ((x - shipLength < 0) || board[y][x - j] != emptySpace) {
             leftValid = false;
         }
-
         // RIGHT
         if ((x + shipLength > 9) || board[y][x + j] != emptySpace) {
             rightValid = false;
         }
-
         // Exit early if placement is impossible.
         if (!upValid && !downValid && !leftValid && !rightValid) {
             break;

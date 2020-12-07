@@ -5,7 +5,7 @@ using namespace std;
 
 void setNumPlayers(int&);
 void setFileOptions(int, bool&, bool&);
-void runGame(Battleship);
+void runGame(Battleship*);
 void playAgain(void);
 
 // DRIVER CODE.
@@ -22,15 +22,18 @@ int main(void) {
     setFileOptions(numPlayers, loadP1ShipFile, loadP2ShipFile);
 
     // Initialise the game.
-    Battleship myGame;
+    Battleship* myGame = new Battleship();
 
-    // Stop the game if the file can't be found (if they choose to use it).
+    // Restart the game if the file can't be found (if they choose to use it).
     try {
-        myGame.startGame(numPlayers, loadP1ShipFile, loadP2ShipFile);
+        myGame->startGame(numPlayers, loadP1ShipFile, loadP2ShipFile);
     } catch (runtime_error e) {
         cout << "Error: " << e.what() << endl;
-        cout << "Terminating game." << endl;
-        return -1;
+        cout << "Restarting game..." << endl;
+        // Delete current game object, then restart the game.
+        delete myGame;
+        main();
+        return 0;
     }
 
     // Run the game until completion.
@@ -131,12 +134,12 @@ void setFileOptions(int numPlayers, bool &loadP1ShipFile, bool &loadP2ShipFile) 
 }
 
 // Runs the game until it's finished.
-void runGame(Battleship myGame) {
+void runGame(Battleship* myGame) {
     // Runs until all the ships have sunk for one side.
-    while (!myGame.isGameFinished()) {
+    while (!myGame->isGameFinished()) {
         // Display text depending on the player turn and number of players.
-        if (myGame.getNumPlayers() == 2) {
-            if (myGame.getCurrPlayer() == 1) {
+        if (myGame->getNumPlayers() == 2) {
+            if (myGame->getCurrPlayer() == 1) {
                 cout << endl << "-----------------------P1 Turn----------------------" << endl;
             } else {
                 cout << endl << "-----------------------P2 Turn----------------------" << endl;
@@ -145,7 +148,7 @@ void runGame(Battleship myGame) {
             cout << endl << "----------------------Your Turn---------------------" << endl;
         }
         
-        myGame.showBoard();
+        myGame->showBoard();
 
         // Get co-ordinates, then seperate them.
         string xy;
@@ -189,11 +192,13 @@ void runGame(Battleship myGame) {
                 throw logic_error("The y-coordinate is out of range. Enter between 1 and 10.");
             }
 
-            myGame.shoot(x, y);
+            myGame->shoot(x, y);
         } catch (logic_error e) {
             cout << "Error: " << e.what() << endl;
         }
     }
+    // Delete the game object after game completion.
+    delete myGame;
 }
 
 // Asks if the player wants to play again.
