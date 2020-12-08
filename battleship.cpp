@@ -50,20 +50,22 @@ void Battleship::startGame(int numPlayers, bool loadP1ShipFile, bool loadP2ShipF
     // Placing the seed here ensures that both board are random.
     srand(time(NULL));
 
-    // Set the ships for player one.
+    // Set data for the ships.
+    setShipData(p1Ships);
+    setShipData(p2Ships);
+
+    // Set the ship placements for player one.
     if (loadP1ShipFile) {
         getShipsFromFile("P1 Board.txt", p1Board);
-        setShipData(p1Ships);
     } else {
-        placeShips(p1Board, p1Ships);
+        placeShips(p1Board);
     }
 
-    // Set ships for player two.
+    // Set ship placements for player two.
     if (loadP2ShipFile) {
         getShipsFromFile("P2 Board.txt", p2Board);
-        setShipData(p2Ships);
     } else {
-        placeShips(p2Board, p2Ships);
+        placeShips(p2Board);
     }
 }
 
@@ -112,7 +114,6 @@ void Battleship::getShipsFromFile(string fileName, char** currBoard) {
 }
 
 // Sets the information for each ship.
-// Used when random ship placement isn't used.
 void Battleship::setShipData(unordered_map<char, Ship> &ships) {
     for (int i = 2; i <= 5; i++) {
         switch (i) {
@@ -133,8 +134,9 @@ void Battleship::setShipData(unordered_map<char, Ship> &ships) {
     }
 }
 
-// Places the ships randomly on the board and sets the data for each ship.
-void Battleship::placeShips(char** board, unordered_map<char, Ship> &ships) {
+// Places the ships randomly on the board.
+void Battleship::placeShips(char** board) {
+    // Place the bigger ships first.
     for (int i = 5; i > 0; i--) {
         int x = rand() % 10;
         int y = rand() % 10;
@@ -145,36 +147,28 @@ void Battleship::placeShips(char** board, unordered_map<char, Ship> &ships) {
             continue;
         }
 
-        // Set the ship type (using ships from Hasbro 2002 version)
-        // and adds the ship's data to the map.
+        // Set the ship type (using ships from Hasbro 2002 version).
         char shipType;
         int shipLength = i;
-        Ship newShip;
         switch (i) {
             case 5:
                 shipType = 'C';
-                newShip = {"Carrier", shipLength, shipLength};
                 break;
             case 4:
                 shipType = 'B';
-                newShip = {"Battleship", shipLength, shipLength};
                 break;
             case 3:
                 shipType = 'D';
-                newShip = {"Destroyer", shipLength, shipLength};
                 break;
             case 2:
                 shipType = 'S';
                 shipLength = 3;
-                newShip = {"Submarine", shipLength, shipLength};
                 break;
             case 1:
                 shipType = 'P';
                 shipLength = 2;
-                newShip = {"Patrol Boat", shipLength, shipLength};
                 break;
         }
-        ships[shipType] = newShip;
 
         // Stores the possible placements in the co-ordinate.
         vector<Direction> validDir = getValidDirections(x, y, shipLength, board);

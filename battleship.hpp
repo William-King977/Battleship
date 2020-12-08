@@ -38,7 +38,7 @@ class Battleship {
 
         // Methods.
         // Ship placements.
-        void placeShips(char** board, unordered_map<char, Ship> &ships);
+        void placeShips(char** board);
         void getShipsFromFile(string fileName, char** currBoard);
         void setShipData(unordered_map<char, Ship> &ships);
         vector<Direction> getValidDirections(int x, int y, int shipLength, char** board);
