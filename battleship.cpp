@@ -106,9 +106,35 @@ void Battleship::getShipsFromFile(string fileName, char** currBoard) {
                     colNum++;
                     break;
             }
+
+            // Too many columns (row/colNum should at most 10).
+            if (colNum > 10) {
+                boardFile.close();
+                throw runtime_error(fileName + ", too many columns (" + to_string(colNum) + 
+                                    " columns in row " + to_string(rowNum + 1) + ").");
+            }
         }
+        // Not enough columns.
+        if (colNum < 10) {
+            boardFile.close();
+            throw runtime_error(fileName + ", not enough columns (" + to_string(colNum) + 
+                                " columns in row " + to_string(rowNum + 1) + ").");
+        }
+
         colNum = 0;
         rowNum++;
+
+        // Too many rows.
+        if (rowNum > 10) {
+            boardFile.close();
+            throw runtime_error(fileName + ", too many rows (" + to_string(rowNum) + " rows).");
+        }
+    }
+
+    // Not enough rows.
+    if (rowNum < 10) {
+        boardFile.close();
+        throw runtime_error(fileName + ", not enough rows (" + to_string(rowNum) + " rows).");
     }
     boardFile.close();
 }
