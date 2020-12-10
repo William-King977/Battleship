@@ -105,6 +105,13 @@ void Battleship::getShipsFromFile(string fileName, char** currBoard) {
                 case emptySpace:
                     colNum++;
                     break;
+                case ' ':
+                    break;
+                // Invalid piece.
+                default:
+                    boardFile.close();
+                    throw runtime_error(fileName + ", invalid piece in row " + to_string(rowNum + 1) + 
+                                    ", column " + to_string(colNum + 1) + '.');
             }
 
             // Too many columns (row/colNum should at most 10).
@@ -130,13 +137,133 @@ void Battleship::getShipsFromFile(string fileName, char** currBoard) {
             throw runtime_error(fileName + ", too many rows (" + to_string(rowNum) + " rows).");
         }
     }
+    boardFile.close();
 
     // Not enough rows.
     if (rowNum < 10) {
-        boardFile.close();
         throw runtime_error(fileName + ", not enough rows (" + to_string(rowNum) + " rows).");
     }
-    boardFile.close();
+
+    // Check the ship placements.
+    if (!isBoardValid(currBoard)) {
+        throw runtime_error(fileName + ", incorrect ship placements.");
+    }
+}
+
+// Check if the board contents are valid (from a file).
+bool Battleship::isBoardValid(char** board) {
+    // Holds previously visited positions.
+    unordered_map<char, vector<Coordinate>> visitedPos;
+
+    // Go through the board.
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
+            int shipLength;
+            switch (board[i][j]) {
+                // Set the ship length.
+                case 'C':
+                    shipLength = 5;
+                    break;
+                case 'B':
+                    shipLength = 4;
+                    break;
+                case 'D':
+                case 'S':
+                    shipLength = 3;
+                    break;
+                case 'P':
+                    shipLength = 2;
+                    break;
+                // Ignore empty spaces.
+                case emptySpace:
+                    continue;
+                    break;
+                // The piece is invalid (not a ship/empty space).
+                default:
+                    return false;
+            }
+
+            char shipType = board[i][j];
+
+            // Add a position queue for a ship (if it doesn't exist).
+            if (visitedPos.find(shipType) == visitedPos.end()) {
+                vector<Coordinate> newShipPos(1, Coordinate(j, i));
+                visitedPos[shipType] = newShipPos;
+            } else {
+                bool isShipSame = false;
+                vector<Coordinate> existShipPos = visitedPos[shipType];
+                // Check if it's a piece of an existing ship.
+                for (Coordinate pos : existShipPos) {
+                    if ((pos.getY() == i) && (pos.getX() == j)) {
+                        isShipSame = true;
+                        break;
+                    }
+                }
+
+                // If it isn't, then the user has placed two of the same ship...
+                if (!isShipSame) {
+                    return false;
+                } else {
+                    continue;
+                }
+            }
+
+            // Check if the ship has been placed correctly.
+            if (!isShipPlacementValid(board, visitedPos[shipType], shipType, shipLength)) {
+                return false;
+            }
+        }
+    }
+
+    // If there are not enough ships.
+    if (visitedPos.size() != 5) {
+        return false;
+    }
+
+    // The whole board is valid.
+    return true;
+}
+
+// Checks if a placement for a ship is valid.
+bool Battleship::isShipPlacementValid(char** board, vector<Coordinate> &shipPos, char shipType, int shipLength) {
+    Coordinate foundPos = shipPos.front();
+    int currSize = 1;
+
+    // Check if it's placed vertically.
+    for (int i = 1; i < shipLength; i++) {
+        // Check downwards (the board is checked left to right, top to bottom).
+        int downPos = foundPos.getY() + i;
+        if (downPos <= 9 && board[downPos][foundPos.getX()] == shipType) {
+            shipPos.push_back(Coordinate(foundPos.getX(), downPos));
+            currSize++;
+        } else {
+            break;
+        }
+    }
+    if (currSize == shipLength) {
+        return true;
+    }
+
+    // Reset currSize.
+    currSize = 1;
+
+    // Check if it's placed horizontally.
+    for (int i = 1; i < shipLength; i++) {
+        // Check to the right.
+        int rightPos = foundPos.getX() + i;
+        if (rightPos <= 9 && board[foundPos.getY()][rightPos] == shipType) {
+            shipPos.push_back(Coordinate(rightPos, foundPos.getY()));
+            currSize++;
+        } else {
+            break;
+        }
+    }
+    if (currSize == shipLength) {
+        return true;
+    }
+
+    // Incorrect ship size.
+    return false;
 }
 
 // Sets the information for each ship.

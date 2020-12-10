@@ -41,6 +41,8 @@ class Battleship {
         void placeShips(char** board);
         void getShipsFromFile(string fileName, char** currBoard);
         void setShipData(unordered_map<char, Ship> &ships);
+        bool isBoardValid(char** board);
+        bool isShipPlacementValid(char** board, vector<Coordinate> &shipPos, char shipType, int shipLength);
         vector<Direction> getValidDirections(int x, int y, int shipLength, char** board);
 
         // CPU methods.
