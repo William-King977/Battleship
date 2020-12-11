@@ -16,9 +16,11 @@ Battleship::~Battleship() {
     for (int i = 0; i < 10; i++) {
         delete[] p1Board[i];
         delete[] p2Board[i];
+        delete[] probBoard[i];
     }
     delete[] p1Board;
     delete[] p2Board;
+    delete[] probBoard;
 
     cpuMoves = {};
     shipPosFound = {};
@@ -30,6 +32,7 @@ Battleship::~Battleship() {
 void Battleship::startGame(int numPlayers, bool loadP1ShipFile, bool loadP2ShipFile) {
     p1Board = new char* [10];
     p2Board = new char* [10];
+    probBoard = new int* [10];
 
     this->numPlayers = numPlayers;
     currPlayer = 1; // Whose turn it is.
@@ -41,9 +44,11 @@ void Battleship::startGame(int numPlayers, bool loadP1ShipFile, bool loadP2ShipF
     for (int i = 0; i < 10; i++) {
         p1Board[i] = new char[10];
         p2Board[i] = new char[10];
+        probBoard[i] = new int [10];
         for (int j = 0; j < 10; j++) {
             p1Board[i][j] = emptySpace;
             p2Board[i][j] = emptySpace;
+            probBoard[i][j] = 0;
         }
     }
 
@@ -145,13 +150,13 @@ void Battleship::getShipsFromFile(string fileName, char** currBoard) {
     }
 
     // Check the ship placements.
-    if (!isBoardValid(currBoard)) {
+    if (!isShipPlacementValid(currBoard)) {
         throw runtime_error(fileName + ", incorrect ship placements.");
     }
 }
 
 // Check if the board contents are valid (from a file).
-bool Battleship::isBoardValid(char** board) {
+bool Battleship::isShipPlacementValid(char** board) {
     // Holds previously visited positions.
     unordered_map<char, vector<Coordinate>> visitedPos;
 
@@ -178,7 +183,7 @@ bool Battleship::isBoardValid(char** board) {
                 case emptySpace:
                     continue;
                     break;
-                // The piece is invalid (not a ship/empty space).
+                // The piece is invalid (it shouldn't reach here...).
                 default:
                     return false;
             }
@@ -209,7 +214,7 @@ bool Battleship::isBoardValid(char** board) {
             }
 
             // Check if the ship has been placed correctly.
-            if (!isShipPlacementValid(board, visitedPos[shipType], shipType, shipLength)) {
+            if (!isShipValid(board, visitedPos[shipType], shipType, shipLength)) {
                 return false;
             }
         }
@@ -225,7 +230,7 @@ bool Battleship::isBoardValid(char** board) {
 }
 
 // Checks if a placement for a ship is valid.
-bool Battleship::isShipPlacementValid(char** board, vector<Coordinate> &shipPos, char shipType, int shipLength) {
+bool Battleship::isShipValid(char** board, vector<Coordinate> &shipPos, char shipType, int shipLength) {
     Coordinate foundPos = shipPos.front();
     int currSize = 1;
 
@@ -529,8 +534,10 @@ void Battleship::cpuShoot() {
         y = shipMoves.front().getY();
         shipMoves.pop();
     } else {
-        x = rand() % 10;
-        y = rand() % 10;
+        // Use probabilty density function to find the next move.
+        Coordinate nextMove = calculateProbability();
+        x = nextMove.getX();
+        y = nextMove.getY();
     }
     
     bool shipHit = false;
@@ -598,6 +605,108 @@ void Battleship::cpuShoot() {
         this->showBoard();
         cout << "All your ships have sunk! The CPU wins." << endl;
     }
+}
+
+// Calculate the probability of each position holding an unsunk ship and
+// return the co-ordinate with the highest probability.
+Coordinate Battleship::calculateProbability() {
+    // Go through each unsunk ship.
+    for (auto elem : p1Ships) {
+        if (elem.second.getHealth() == 0) {
+            continue;
+        }
+
+        int shipLength = elem.second.getLength();
+
+        // Go through the board.
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                // Skip positions already hit.
+                if (isPosHit(p1Board[i][j])) {
+                    continue;
+                }
+
+                int upSize = 1;
+                int downSize = 1;
+                int leftSize = 1;
+                int rightSize = 1;
+                bool upInBound = true;
+                bool downInBound = true;
+                bool leftInBound = true;
+                bool rightInBound = true;
+
+                // Check if the ship is placeable in each direction.
+                for (int k = 1; k < shipLength; k++) {
+                    int upPos = i - k;
+                    int downPos = i + k;
+                    int leftPos = j - k;
+                    int rightPos = j + k;
+
+                    // UP
+                    if (upPos >= 0 && !isPosHit(p1Board[upPos][j]) && upInBound) {
+                        upSize++;
+                    } else {
+                        upInBound = false;
+                    }
+
+                    // DOWN
+                    if (downPos <= 9 && !isPosHit(p1Board[downPos][j]) && downInBound) {
+                        downSize++;
+                    } else {
+                        downInBound = false;
+                    }
+
+                    // LEFT
+                    if (leftPos >= 0 && !isPosHit(p1Board[i][leftPos]) && leftInBound) {
+                        leftSize++;
+                    } else {
+                        leftInBound = false;
+                    }
+
+                    // RIGHT
+                    if (rightPos <= 9 && !isPosHit(p1Board[i][rightPos]) && rightInBound) {
+                        rightSize++;
+                    } else {
+                        rightInBound = false;
+                    }
+
+                    // Exit early if possible.
+                    if (!upInBound && !downInBound && !leftInBound && !rightInBound) {
+                        break;
+                    }
+                }
+
+                // Increment where appropriate.
+                if (upSize == shipLength) {
+                    probBoard[i][j]++;
+                }
+                if (downSize == shipLength) {
+                    probBoard[i][j]++;
+                }
+                if (leftSize == shipLength) {
+                    probBoard[i][j]++;
+                }
+                if (rightSize == shipLength) {
+                    probBoard[i][j]++;
+                }
+            }
+        }
+    }
+
+    // Find largest probability and use that as the next move.
+    Coordinate nextMove(0, 0);
+    int currMax = 0;
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
+            if (probBoard[i][j] > currMax) {
+                nextMove = Coordinate(j, i);
+                currMax = probBoard[i][j];
+            }
+            // Reset the board as we go.
+            probBoard[i][j] = 0;
+        }
+    }
+    return nextMove;
 }
 
 // Sets the possible moves for the CPU after a ship is hit.

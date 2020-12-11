@@ -27,6 +27,7 @@ class Battleship {
         int currPlayer;
         char** p1Board;
         char** p2Board;
+        int** probBoard; // For CPU probability.
         int p1ShipCount;
         int p2ShipCount;
         bool isFinished;
@@ -41,12 +42,13 @@ class Battleship {
         void placeShips(char** board);
         void getShipsFromFile(string fileName, char** currBoard);
         void setShipData(unordered_map<char, Ship> &ships);
-        bool isBoardValid(char** board);
-        bool isShipPlacementValid(char** board, vector<Coordinate> &shipPos, char shipType, int shipLength);
+        bool isShipPlacementValid(char** board);
+        bool isShipValid(char** board, vector<Coordinate> &shipPos, char shipType, int shipLength);
         vector<Direction> getValidDirections(int x, int y, int shipLength, char** board);
 
         // CPU methods.
         void cpuShoot();
+        Coordinate calculateProbability();
         void setCpuMoves(int x, int y, Ship thatShip);
         void findShip(int x, int y, Ship thatShip);
         void sinkShip(int x, int y, Ship thatShip);
