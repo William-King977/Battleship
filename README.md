@@ -5,6 +5,9 @@ A battleship game using text-based representation. Based on the guessing game of
 - Everything is coded in Visual Studio Code.
 - Interaction is done through the Terminal, no GUI is involved.
 - The CPU makes use of a probability density function to determine its next move.
+- There are two Battleship classes:
+  - Battleship: the main class. It has the elements and methods to run a two player game.
+  - BattleshipCPU: subclass of Battleship. It allows single player games against the CPU.
 
 # Game Options
 - Single player against the computer.
