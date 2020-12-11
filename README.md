@@ -4,7 +4,7 @@ A battleship game using text-based representation. Based on the guessing game of
 # Notes About The Implementation
 - Everything is coded in Visual Studio Code.
 - Interaction is done through the Terminal, no GUI is involved.
-- The CPU's actions are mostly random.
+- The CPU makes use of a probability density function to determine its next move.
 
 # Game Options
 - Single player against the computer.
