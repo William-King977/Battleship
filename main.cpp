@@ -1,4 +1,5 @@
 #include "battleship.hpp"
+#include "battleshipCPU.hpp"
 #include <iostream>
 #include <exception>
 using namespace std;
@@ -22,7 +23,12 @@ int main(void) {
     setFileOptions(numPlayers, loadP1ShipFile, loadP2ShipFile);
 
     // Initialise the game.
-    Battleship* myGame = new Battleship();
+    Battleship* myGame = nullptr;
+    if (numPlayers == 1) {
+        myGame = new BattleshipCPU();
+    } else {
+        myGame = new Battleship();
+    }
 
     // Restart the game if the file can't be found (if they choose to use it).
     try {
@@ -193,6 +199,10 @@ void runGame(Battleship* myGame) {
             }
 
             myGame->shoot(x, y);
+            // Run the CPU's turn if it's single player.
+            if (myGame->getNumPlayers() == 1) { 
+                static_cast<BattleshipCPU*>(myGame)->cpuShoot();
+            }
         } catch (logic_error e) {
             cout << "Error: " << e.what() << endl;
         }
