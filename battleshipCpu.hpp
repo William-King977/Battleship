@@ -11,6 +11,7 @@ class BattleshipCPU : public Battleship {
         void cpuShoot();
     protected:
         int** probBoard; // For CPU probability.
+        bool sinkMode; // True, if it's currently sinking a found ship.
         Ship prevShipHit;
         unordered_map<string, queue<Coordinate>> shipPosFound; // Discovered ship positions.
         unordered_map<string, queue<Coordinate>> cpuMoves; // Moves to sink the ship(s) found.

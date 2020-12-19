@@ -11,6 +11,7 @@ BattleshipCPU::BattleshipCPU() {
             probBoard[i][j] = 0;
         }
     }
+    sinkMode = false;
 }
 
 // Deconstructor deletes/clears certain data structures.
@@ -87,11 +88,12 @@ void BattleshipCPU::cpuShoot() {
         if (thatShip.getHealth() == 0) {
             cout << "Your " << thatShip.getName() << " has sunk!" << endl;
             p1ShipCount--;
-            // Remove ship from the maps.
+            // Remove ship from the unordered maps.
             shipPosFound.erase(thatShip.getName());
             cpuMoves.erase(thatShip.getName());
             // Sets the next previous ship to sink.
             setPrevShip();
+            sinkMode = false;
         // Only add moves if the ship has not sunk.
         } else {
             setCpuMoves(x, y, thatShip);
@@ -229,7 +231,7 @@ Coordinate BattleshipCPU::getCpuMove() {
     }
 
     // If the CPU is trying to find the ship's position.
-    if (prevShipHit.getName() == "") {
+    if (!sinkMode) {
         Coordinate prevMove = shipPosFound[shipKey].front();
         Coordinate newMove = shipMoves.front();
         Direction dir = getDirection(prevMove, newMove);
@@ -253,6 +255,7 @@ void BattleshipCPU::setCpuMoves(int x, int y, Ship thatShip) {
     // Otherwise, push the coordinates into the existing queues (to sink the ship).
     } else {
         sinkShip(x, y, thatShip);
+        sinkMode = true;
     }
 }
 
