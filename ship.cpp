@@ -17,7 +17,7 @@ Ship::Ship(string name, int length, int health) {
 // Deconstructor.
 Ship::~Ship() { }
 
-// Getters for each variable.
+// Getters.
 string Ship::getName() { 
     return name; 
 }
@@ -28,10 +28,7 @@ int Ship::getHealth() {
     return health; 
 }
 
-// Setters.
-void Ship::setName(string name) { 
-    this->name = name; 
-}       
+// Setters.      
 void Ship::setHealth(int health) { 
     this->health = health;
 }

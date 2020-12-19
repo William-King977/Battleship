@@ -63,7 +63,7 @@ void BattleshipCPU::cpuShoot() {
             cout << "Nothing was hit." << endl;
             // If there is a ship that has been hit (but not sunk),
             // then push the remaining moves to sink it.
-            if ((prevShipHit.getName()).length() > 0) {
+            if (sinkMode) {
                 backTrackShot(x, y);
             }
             break;
@@ -227,6 +227,7 @@ Coordinate BattleshipCPU::getCpuMove() {
         Coordinate last = shipPosFound[shipKey].back();
         // Direction of the ship being shot before going on another ship.
         setAltMoves(getDirection(last, first), last);
+        sinkMode = true;
         return getCpuMove();
     }
 
@@ -252,6 +253,7 @@ void BattleshipCPU::setCpuMoves(int x, int y, Ship thatShip) {
     // If the key (ship) doesn't exist, try and find the ship's direction.
     if (shipPosFound.find(thatShip.getName()) == shipPosFound.end()) {
         findShip(x, y, thatShip);
+        sinkMode = false;
     // Otherwise, push the coordinates into the existing queues (to sink the ship).
     } else {
         sinkShip(x, y, thatShip);
@@ -265,10 +267,6 @@ void BattleshipCPU::findShip(int x, int y, Ship thatShip) {
     queue<Coordinate> shipHitPos;
     shipHitPos.push(Coordinate(x, y));
     shipPosFound[thatShip.getName()] = shipHitPos;
-
-    // NOTE: if a shot is missed (after this turn) when trying to find
-    // the ship's position, backtracking won't occur.
-    prevShipHit.setName("");
 
     // Create possible moves queue (for cpuMoves).
     queue<Coordinate> possibleMoves;
@@ -432,9 +430,6 @@ void BattleshipCPU::setPrevShip() {
             Direction dir = getDirection(prevMove, firstMove);
             setAltMoves(dir, prevMove);
         }
-    } else {
-        // Indicate that there are no ships to sink (for now).
-        prevShipHit.setName("");
     }
 }
 
