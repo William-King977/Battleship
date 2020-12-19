@@ -17,6 +17,7 @@ class BattleshipCPU : public Battleship {
 
         // Methods.
         Coordinate calculateProbability();
+        Coordinate getCpuMove();
         void setCpuMoves(int x, int y, Ship thatShip);
         void findShip(int x, int y, Ship thatShip);
         void sinkShip(int x, int y, Ship thatShip);

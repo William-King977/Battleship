@@ -27,30 +27,14 @@ BattleshipCPU::~BattleshipCPU() {
 
 // Performs the CPU's turn.
 void BattleshipCPU::cpuShoot() {
-    cout << endl << "---------------------CPU's Turn---------------------" << endl;
     int x;
     int y;
     
+    // Get a move from CPU moves if possible.
     if (!cpuMoves.empty()) {
-        // Get possible moves for a damaged, but unsunk ship.
-        string shipKey = cpuMoves.begin()->first;
-        queue<Coordinate> &shipMoves = cpuMoves[shipKey];
-
-        // If there are no moves, then push the moves to sink it.
-        if (shipMoves.size() == 0) {
-            // setAltMoves() needs this.
-            prevShipHit = p1Ships[shipKey[0]];
-            Coordinate first = shipPosFound[shipKey].front();
-            Coordinate last = shipPosFound[shipKey].back();
-            // Direction of the ship being shot before going on another ship.
-            setAltMoves(getDirection(last, first), last);
-            cpuShoot();
-            return;
-        }
-
-        x = shipMoves.front().getX();
-        y = shipMoves.front().getY();
-        shipMoves.pop();
+        Coordinate nextMove = getCpuMove();
+        x = nextMove.getX();
+        y = nextMove.getY();
     } else {
         // Use probabilty density function to find the next move.
         Coordinate nextMove = calculateProbability();
@@ -227,6 +211,40 @@ Coordinate BattleshipCPU::calculateProbability() {
     return nextMove;
 }
 
+// Gets a move used to hunt down a discovered ship.
+Coordinate BattleshipCPU::getCpuMove() {
+    // Get possible moves for a damaged, but unsunk ship.
+    string shipKey = cpuMoves.begin()->first;
+    queue<Coordinate> &shipMoves = cpuMoves[shipKey];
+
+    // If there are no moves, then push the moves to sink it.
+    if (shipMoves.size() == 0) {
+        // setAltMoves() needs this.
+        prevShipHit = p1Ships[shipKey[0]];
+        Coordinate first = shipPosFound[shipKey].front();
+        Coordinate last = shipPosFound[shipKey].back();
+        // Direction of the ship being shot before going on another ship.
+        setAltMoves(getDirection(last, first), last);
+        return getCpuMove();
+    }
+
+    // If the CPU is trying to find the ship's position.
+    if (prevShipHit.getName() == "") {
+        Coordinate prevMove = shipPosFound[shipKey].front();
+        Coordinate newMove = shipMoves.front();
+        Direction dir = getDirection(prevMove, newMove);
+        // If it's not possible for the ship to be in the given direction.
+        if (!canShipExist(p1Ships[shipKey[0]].getLength(), prevMove, dir)) {
+            shipMoves.pop();
+            return getCpuMove();
+        }
+    }
+
+    Coordinate nextMove = shipMoves.front();
+    shipMoves.pop();
+    return nextMove;
+}
+
 // Sets the possible moves for the CPU after a ship is hit.
 void BattleshipCPU::setCpuMoves(int x, int y, Ship thatShip) {
     // If the key (ship) doesn't exist, try and find the ship's direction.
@@ -242,8 +260,7 @@ void BattleshipCPU::setCpuMoves(int x, int y, Ship thatShip) {
 void BattleshipCPU::findShip(int x, int y, Ship thatShip) {
     // Create hit position queue (positions hit on the ship).
     queue<Coordinate> shipHitPos;
-    Coordinate newPos(x, y);
-    shipHitPos.push(newPos);
+    shipHitPos.push(Coordinate(x, y));
     shipPosFound[thatShip.getName()] = shipHitPos;
 
     // NOTE: if a shot is missed (after this turn) when trying to find
@@ -252,39 +269,24 @@ void BattleshipCPU::findShip(int x, int y, Ship thatShip) {
 
     // Create possible moves queue (for cpuMoves).
     queue<Coordinate> possibleMoves;
-        
-    // These positions will be used as temperary boundaries.
-    char tempUpChar = '\0';
-    char tempLeftChar = '\0';
 
     // Up, down, left, right (respectively).
     // Adds positions around where the ship was hit.
     // We don't know where the ship is positioned at this point.
-    if (y > 0 && !isPosHit(p1Board[y - 1][x]) && canShipExist(thatShip.getLength(), newPos, UP)) {
-        // Temporarily mark it to adjust the 'boundaries' for the opposite direction.
-        tempUpChar = p1Board[y - 1][x];
-        p1Board[y - 1][x] = 'O';
+    if (y > 0 && !isPosHit(p1Board[y - 1][x])) {
         possibleMoves.push(Coordinate(x, y - 1));
     }
-    if (y < 9  && !isPosHit(p1Board[y + 1][x]) && canShipExist(thatShip.getLength(), newPos, DOWN)) {
+    if (y < 9  && !isPosHit(p1Board[y + 1][x])) {
         possibleMoves.push(Coordinate(x, y + 1));
     }
-    if (x > 0  && !isPosHit(p1Board[y][x - 1]) && canShipExist(thatShip.getLength(), newPos, LEFT)) {
-        tempLeftChar = p1Board[y][x - 1];
-        p1Board[y][x - 1] = 'O';
+    if (x > 0  && !isPosHit(p1Board[y][x - 1])) {
         possibleMoves.push(Coordinate(x - 1, y));
     }
-    if (x < 9  && !isPosHit(p1Board[y][x + 1]) && canShipExist(thatShip.getLength(), newPos, RIGHT)) {
+    if (x < 9  && !isPosHit(p1Board[y][x + 1])) {
         possibleMoves.push(Coordinate(x + 1, y));
     }
 
-    // Put back the characters and allocate the moves queue.
-    if (tempUpChar != '\0') {
-        p1Board[y - 1][x] = tempUpChar;
-    }
-    if (tempLeftChar != '\0') {
-        p1Board[y][x - 1] = tempLeftChar;
-    }
+    // Set the cpuMoves queue.
     cpuMoves[thatShip.getName()] = possibleMoves;
 }
 
