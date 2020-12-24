@@ -26,6 +26,15 @@ BattleshipCPU::~BattleshipCPU() {
     shipPosFound = {};
 }
 
+// Resets the probabilities of each position to 0.
+void BattleshipCPU::resetProbability() {
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
+            probBoard[i][j] = 0;
+        }
+    }
+}
+
 // Performs the CPU's turn.
 void BattleshipCPU::cpuShoot() {
     int x;
@@ -38,6 +47,7 @@ void BattleshipCPU::cpuShoot() {
         y = nextMove.getY();
     } else {
         // Use probabilty density function to find the next move.
+        resetProbability();
         Coordinate nextMove = calculateProbability();
         x = nextMove.getX();
         y = nextMove.getY();
@@ -206,8 +216,6 @@ Coordinate BattleshipCPU::calculateProbability() {
                 nextMove = Coordinate(j, i);
                 currMax = probBoard[i][j];
             }
-            // Reset the board as we go.
-            probBoard[i][j] = 0;
         }
     }
     return nextMove;
@@ -271,22 +279,76 @@ void BattleshipCPU::findShip(int x, int y, Ship thatShip) {
     // Create possible moves queue (for cpuMoves).
     queue<Coordinate> possibleMoves;
 
-    // Up, down, left, right (respectively).
-    // Adds positions around where the ship was hit.
-    // We don't know where the ship is positioned at this point.
-    if (y > 0 && !isPosHit(p1Board[y - 1][x])) {
-        possibleMoves.push(Coordinate(x, y - 1));
-    }
-    if (y < 9  && !isPosHit(p1Board[y + 1][x])) {
-        possibleMoves.push(Coordinate(x, y + 1));
-    }
-    if (x > 0  && !isPosHit(p1Board[y][x - 1])) {
-        possibleMoves.push(Coordinate(x - 1, y));
-    }
-    if (x < 9  && !isPosHit(p1Board[y][x + 1])) {
-        possibleMoves.push(Coordinate(x + 1, y));
-    }
+    bool upPlaced = false;
+    bool downPlaced = false;
+    bool leftPlaced = false;
+    bool rightPlaced = false;
 
+    // Recalculate the probability.
+    resetProbability();
+    Coordinate resetProb = calculateProbability();
+
+    // Set probability to -1 if the position is out of bounds.
+    int upProb = (y > 0) ? probBoard[y - 1][x] : -1;
+    int downProb = (y < 9) ? probBoard[y + 1][x] : -1;
+    int leftProb = (x > 0) ? probBoard[y][x - 1] : -1;
+    int rightProb = (x < 9) ? probBoard[y][x + 1] : -1;
+
+    // Adds positions around where the ship was hit (in descending order of probability).
+    // We don't know where the ship is positioned at this point.
+    while (!upPlaced || !downPlaced || !leftPlaced || !rightPlaced) {
+        int maxVerti = (upProb > downProb) ? upProb : downProb;
+        int maxHoriz = (leftProb > rightProb) ? leftProb : rightProb;
+        int currMax = (maxVerti > maxHoriz) ? maxVerti : maxHoriz;
+
+        // UP.
+        if (y > 0 && !isPosHit(p1Board[y - 1][x]) && !upPlaced) {
+            if (upProb == currMax) {
+                possibleMoves.push(Coordinate(x, y - 1));
+                upPlaced = true;
+                upProb = 0;
+            }
+        } else {
+            upPlaced = true;
+            upProb = 0;
+        }
+
+        // DOWN.
+        if (y < 9 && !isPosHit(p1Board[y + 1][x]) && !downPlaced) {
+            if (downProb == currMax) {
+                possibleMoves.push(Coordinate(x, y + 1));
+                downPlaced = true;
+                downProb = 0;
+            }
+        } else {
+            downPlaced = true;
+            downProb = 0;
+        }
+
+        // LEFT.
+        if (x > 0 && !isPosHit(p1Board[y][x - 1]) && !leftPlaced) {
+            if (leftProb == currMax) {
+                possibleMoves.push(Coordinate(x - 1, y));
+                leftPlaced = true;
+                leftProb = 0;
+            }
+        } else {
+            leftPlaced = true;
+            leftProb = 0;
+        }
+
+        // RIGHT.
+        if (x < 9 && !isPosHit(p1Board[y][x + 1]) && !rightPlaced) {
+            if (rightProb == currMax) {
+                possibleMoves.push(Coordinate(x + 1, y));
+                rightPlaced = true;
+                rightProb = 0;
+            }
+        } else {
+            rightPlaced = true;
+            rightProb = 0;
+        }
+    }
     // Set the cpuMoves queue.
     cpuMoves[thatShip.getName()] = possibleMoves;
 }
