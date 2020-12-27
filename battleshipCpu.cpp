@@ -306,11 +306,11 @@ void BattleshipCPU::findShip(int x, int y, Ship thatShip) {
             if (upProb == currMax) {
                 possibleMoves.push(Coordinate(x, y - 1));
                 upPlaced = true;
-                upProb = 0;
+                upProb = -1;
             }
         } else {
+            // Even if it's not valid. Indicate that it has been checked.
             upPlaced = true;
-            upProb = 0;
         }
 
         // DOWN.
@@ -318,11 +318,10 @@ void BattleshipCPU::findShip(int x, int y, Ship thatShip) {
             if (downProb == currMax) {
                 possibleMoves.push(Coordinate(x, y + 1));
                 downPlaced = true;
-                downProb = 0;
+                downProb = -1;
             }
         } else {
             downPlaced = true;
-            downProb = 0;
         }
 
         // LEFT.
@@ -330,11 +329,10 @@ void BattleshipCPU::findShip(int x, int y, Ship thatShip) {
             if (leftProb == currMax) {
                 possibleMoves.push(Coordinate(x - 1, y));
                 leftPlaced = true;
-                leftProb = 0;
+                leftProb = -1;
             }
         } else {
             leftPlaced = true;
-            leftProb = 0;
         }
 
         // RIGHT.
@@ -342,11 +340,10 @@ void BattleshipCPU::findShip(int x, int y, Ship thatShip) {
             if (rightProb == currMax) {
                 possibleMoves.push(Coordinate(x + 1, y));
                 rightPlaced = true;
-                rightProb = 0;
+                rightProb = -1;
             }
         } else {
             rightPlaced = true;
-            rightProb = 0;
         }
     }
     // Set the cpuMoves queue.
