@@ -17,9 +17,10 @@ class BattleshipCPU : public Battleship {
         unordered_map<string, queue<Coordinate>> cpuMoves; // Moves to sink the ship(s) found.
 
         // Methods.
-        Coordinate calculateProbability();
-        Coordinate getCpuMove();
+        void calculateProbability();
         void resetProbability();
+        Coordinate getNextMove(); // Get move based on probability density.
+        Coordinate getCpuMove();
         void setCpuMoves(int x, int y, Ship thatShip);
         void findShip(int x, int y, Ship thatShip);
         void sinkShip(int x, int y, Ship thatShip);

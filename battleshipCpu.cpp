@@ -47,8 +47,7 @@ void BattleshipCPU::cpuShoot() {
         y = nextMove.getY();
     } else {
         // Use probabilty density function to find the next move.
-        resetProbability();
-        Coordinate nextMove = calculateProbability();
+        Coordinate nextMove = getNextMove();
         x = nextMove.getX();
         y = nextMove.getY();
     }
@@ -121,9 +120,11 @@ void BattleshipCPU::cpuShoot() {
     }
 }
 
-// Calculate the probability of each position holding an unsunk ship and
-// return the co-ordinate with the highest probability.
-Coordinate BattleshipCPU::calculateProbability() {
+// Calculate the probability of each position holding an unsunk ship.
+void BattleshipCPU::calculateProbability() {
+    // Reset probability first.
+    resetProbability();
+
     // Go through each unsunk ship.
     for (auto elem : p1Ships) {
         if (elem.second.getHealth() == 0) {
@@ -206,10 +207,15 @@ Coordinate BattleshipCPU::calculateProbability() {
             }
         }
     }
+}
 
+// Gets the move with the highest density probability.
+Coordinate BattleshipCPU::getNextMove() {
     // Find largest probability and use that as the next move.
+    calculateProbability();
     Coordinate nextMove(0, 0);
     int currMax = 0;
+
     for (int i = 0; i < 10; i++) {
         for (int j = 0; j < 10; j++) {
             if (probBoard[i][j] > currMax) {
@@ -285,8 +291,7 @@ void BattleshipCPU::findShip(int x, int y, Ship thatShip) {
     bool rightPlaced = false;
 
     // Recalculate the probability.
-    resetProbability();
-    Coordinate resetProb = calculateProbability();
+    calculateProbability();
 
     // Set probability to -1 if the position is out of bounds.
     int upProb = (y > 0) ? probBoard[y - 1][x] : -1;
