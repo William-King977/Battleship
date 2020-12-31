@@ -209,18 +209,39 @@ void BattleshipCPU::calculateProbability() {
     }
 }
 
+// Checks for even parity for a specified position.
+bool BattleshipCPU::checkParity(int x, int y) {
+    int minShipSize = 5;
+    // Get the size of the smallest unsunk ship.
+    for (auto ship : p1Ships) {
+        Ship currShip = ship.second;
+        if (currShip.getHealth() > 0 && currShip.getLength() < minShipSize) {
+            minShipSize = currShip.getLength();
+        }
+    }
+
+    // Ajust the restrictions based on the smallest ship left.
+    bool vertiParity = ((x + 1) % 2 == 0) == ((y + 1) % minShipSize == 0);
+    bool horizParity = ((x + 1) % minShipSize == 0) == ((y + 1) % 2 == 0);
+    return vertiParity || horizParity;
+}
+
 // Gets the move with the highest density probability.
 Coordinate BattleshipCPU::getNextMove() {
     // Find largest probability and use that as the next move.
     calculateProbability();
     Coordinate nextMove(0, 0);
-    int currMax = 0;
+    int currMax = probBoard[0][0];
 
     for (int i = 0; i < 10; i++) {
         for (int j = 0; j < 10; j++) {
-            if (probBoard[i][j] > currMax) {
-                nextMove = Coordinate(j, i);
+            // Favour positions with even parity.
+            if ((probBoard[i][j] >= currMax) && checkParity(j, i)) {
                 currMax = probBoard[i][j];
+                nextMove = Coordinate(j, i);
+            } else if (probBoard[i][j] > currMax) {
+                currMax = probBoard[i][j];
+                nextMove = Coordinate(j, i);
             }
         }
     }
@@ -290,14 +311,14 @@ void BattleshipCPU::findShip(int x, int y, Ship thatShip) {
     bool leftPlaced = false;
     bool rightPlaced = false;
 
-    // Recalculate the probability.
+    // Recalculate probabilty
     calculateProbability();
 
     // Set probability to -1 if the position is out of bounds.
-    int upProb = (y > 0) ? probBoard[y - 1][x] : -1;
-    int downProb = (y < 9) ? probBoard[y + 1][x] : -1;
-    int leftProb = (x > 0) ? probBoard[y][x - 1] : -1;
-    int rightProb = (x < 9) ? probBoard[y][x + 1] : -1;
+    int upProb = (y > 0) && !isPosHit(p1Board[y - 1][x]) ? probBoard[y - 1][x] : -1;
+    int downProb = (y < 9) && !isPosHit(p1Board[y + 1][x]) ? probBoard[y + 1][x] : -1;
+    int leftProb = (x > 0) && !isPosHit(p1Board[y][x - 1]) ? probBoard[y][x - 1] : -1;
+    int rightProb = (x < 9) && !isPosHit(p1Board[y][x + 1]) ? probBoard[y][x + 1] : -1;
 
     // Adds positions around where the ship was hit (in descending order of probability).
     // We don't know where the ship is positioned at this point.

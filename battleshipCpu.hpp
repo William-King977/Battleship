@@ -19,6 +19,7 @@ class BattleshipCPU : public Battleship {
         // Methods.
         void calculateProbability();
         void resetProbability();
+        bool checkParity(int x, int y);
         Coordinate getNextMove(); // Get move based on probability density.
         Coordinate getCpuMove();
         void setCpuMoves(int x, int y, Ship thatShip);
