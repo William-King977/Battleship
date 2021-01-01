@@ -26,15 +26,6 @@ BattleshipCPU::~BattleshipCPU() {
     shipPosFound = {};
 }
 
-// Resets the probabilities of each position to 0.
-void BattleshipCPU::resetProbability() {
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
-            probBoard[i][j] = 0;
-        }
-    }
-}
-
 // Performs the CPU's turn.
 void BattleshipCPU::cpuShoot() {
     int x;
@@ -122,25 +113,24 @@ void BattleshipCPU::cpuShoot() {
 
 // Calculate the probability of each position holding an unsunk ship.
 void BattleshipCPU::calculateProbability() {
-    // Reset probability first.
-    resetProbability();
+    // Go through the board.
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
+            // Reset the position.
+            probBoard[i][j] = 0;
 
-    // Go through each unsunk ship.
-    for (auto elem : p1Ships) {
-        if (elem.second.getHealth() == 0) {
-            continue;
-        }
+            // Skip positions already hit.
+            if (isPosHit(p1Board[i][j])) {
+                continue;
+            }
 
-        int shipLength = elem.second.getLength();
-
-        // Go through the board.
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 10; j++) {
-                // Skip positions already hit.
-                if (isPosHit(p1Board[i][j])) {
+            // Go through each unsunk ship.
+            for (auto elem : p1Ships) {
+                if (elem.second.getHealth() == 0) {
                     continue;
                 }
 
+                int shipLength = elem.second.getLength();
                 int upSize = 1;
                 int downSize = 1;
                 int leftSize = 1;
@@ -220,18 +210,30 @@ bool BattleshipCPU::checkParity(int x, int y) {
         }
     }
 
-    // Ajust the restrictions based on the smallest ship left.
-    bool vertiParity = ((x + 1) % 2 == 0) == ((y + 1) % minShipSize == 0);
-    bool horizParity = ((x + 1) % minShipSize == 0) == ((y + 1) % 2 == 0);
-    return vertiParity || horizParity;
+    bool validParity = false;
+    int startPos = (minShipSize - 1) - y;
+
+    // Adjust the starting position until it's positive.
+    while (startPos < 0) {
+        startPos+= minShipSize;
+    }
+
+    // Check if it's a parity based on the x coordinate.
+    for (int j = startPos; j < 10; j+=minShipSize) {
+        if (j == x) {
+            validParity = true;
+            break;
+        }
+    }
+    return validParity;
 }
 
 // Gets the move with the highest density probability.
 Coordinate BattleshipCPU::getNextMove() {
     // Find largest probability and use that as the next move.
     calculateProbability();
-    Coordinate nextMove(0, 0);
-    int currMax = probBoard[0][0];
+    Coordinate nextMove(-1, -1);
+    int currMax = 0;
 
     for (int i = 0; i < 10; i++) {
         for (int j = 0; j < 10; j++) {
@@ -310,9 +312,6 @@ void BattleshipCPU::findShip(int x, int y, Ship thatShip) {
     bool downPlaced = false;
     bool leftPlaced = false;
     bool rightPlaced = false;
-
-    // Recalculate probabilty
-    calculateProbability();
 
     // Set probability to -1 if the position is out of bounds.
     int upProb = (y > 0) && !isPosHit(p1Board[y - 1][x]) ? probBoard[y - 1][x] : -1;
