@@ -488,7 +488,6 @@ void Battleship::shoot(char charX, int y) {
             cout << "Congratulations! You have sunk all of " << enemyPlayer << "'s ships." << endl;
             cout << "Player " << currPlayer << " wins!" << endl;
         }
-        return;
     }
 
     // Change players if it's a two player game.

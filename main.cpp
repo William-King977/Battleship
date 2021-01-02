@@ -200,7 +200,7 @@ void runGame(Battleship* myGame) {
 
             myGame->shoot(x, y);
             // Run the CPU's turn if it's single player.
-            if (myGame->getNumPlayers() == 1) {
+            if (myGame->getNumPlayers() == 1 && !myGame->isGameFinished()) {
                 cout << endl << "---------------------CPU's Turn---------------------" << endl;
                 static_cast<BattleshipCPU*>(myGame)->cpuShoot();
             }
