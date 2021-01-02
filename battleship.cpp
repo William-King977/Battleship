@@ -439,43 +439,31 @@ void Battleship::shoot(char charX, int y) {
             break;
         case emptySpace:
             currBoard[y][x] = 'O';
-            cout << "Nothing was hit." << endl;
+            cout << "Miss." << endl;
             break;
         default:
             // The position was already hit.
             throw logic_error("You've hit this position already.");
     }
 
-    // Holds the opponent's player number.
-    string enemyPlayer = (currPlayer == 1) ? "Player 2" : "Player 1";
-
     // If a ship was hit.
     if (shipHit) {
         // Get the ship that was hit.
         Ship &thatShip = currShips[shipType];
         thatShip.setHealth(thatShip.getHealth() - 1);
-        // Display a suitable message.
-        if (numPlayers == 1) {
-            cout << "You've hit the enemy's " << thatShip.getName() << '.' << endl;
-        } else {
-            cout << "You've hit " << enemyPlayer << "'s " << thatShip.getName() << '.' << endl;
-        }
 
         // If the resulting hit sunk the ship.
         if (thatShip.getHealth() == 0) {
             currShipCount--;
             // Display a suitable message.
-            if (numPlayers == 1) {
-                cout << "You've sunk the enemy's " << thatShip.getName() << '.' << endl;
-            } else {
-                cout << "You've sunk " << enemyPlayer << "'s " << thatShip.getName() << '.' << endl;
-            }
+            cout << "Hit and sunk. " << thatShip.getName() << '.' << endl;
+        } else {
+            cout << "Hit. " << thatShip.getName() << '.' << endl;
         }
     }
 
     // Show the number of ships remaining.
-    string playerType = (numPlayers == 1) ? "CPU" : enemyPlayer;
-    cout << "Ships Remaining (" << playerType << "): " << currShipCount << endl;
+    cout << "Ships Sunk: " << (5 - currShipCount) << endl;
 
     // If all the ships have sunk.
     if (currShipCount == 0) {
@@ -483,9 +471,12 @@ void Battleship::shoot(char charX, int y) {
         this->showBoard();
         // Display a suitable message.
         if (numPlayers == 1) {
-            cout << "Congratulations! You have sunk all the enemy ships." << endl;
+            cout << "All of the CPU's ships have sunk." << endl;
+            cout << "You win!" << endl;
         } else {
-            cout << "Congratulations! You have sunk all of " << enemyPlayer << "'s ships." << endl;
+            // Display a message with the opponent's player number.
+            int enemyPlayer = (currPlayer == 1) ? 2 : 1;
+            cout << "All of Player " << enemyPlayer << "'s ships have sunk." << endl;
             cout << "Player " << currPlayer << " wins!" << endl;
         }
     }

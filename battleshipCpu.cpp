@@ -60,7 +60,7 @@ void BattleshipCPU::cpuShoot() {
             break;
         case emptySpace:
             p1Board[y][x] = 'O';
-            cout << "Nothing was hit." << endl;
+            cout << "Miss." << endl;
             // If there is a ship that has been hit (but not sunk),
             // then push the remaining moves to sink it.
             if (sinkMode) {
@@ -82,11 +82,10 @@ void BattleshipCPU::cpuShoot() {
         // Get the ship that was hit.
         Ship &thatShip = p1Ships[shipType];
         thatShip.setHealth(thatShip.getHealth() - 1);
-        cout << "Your " << thatShip.getName() << " has been hit." << endl;
 
         // If the resulting hit sunk the ship.
         if (thatShip.getHealth() == 0) {
-            cout << "Your " << thatShip.getName() << " has sunk!" << endl;
+            cout << "Hit and sunk. " << thatShip.getName() << '.' << endl;
             p1ShipCount--;
             // Remove ship from the unordered maps.
             shipPosFound.erase(thatShip.getName());
@@ -96,18 +95,20 @@ void BattleshipCPU::cpuShoot() {
             sinkMode = false;
         // Only add moves if the ship has not sunk.
         } else {
+            cout << "Hit. " << thatShip.getName() << '.' << endl;
             setCpuMoves(x, y, thatShip);
         }
     }
 
     // Show the number of ships remaining.
-    cout << "Ships Remaining (Player 1): " << p1ShipCount << endl;
+    cout << "Ships Sunk: " << (5 - p1ShipCount) << endl;
 
     // If all the ships have sunk.
     if (p1ShipCount == 0) {
         isFinished = true;
         this->showBoard();
-        cout << "All your ships have sunk! The CPU wins." << endl;
+        cout << "All your ships have sunk." << endl;
+        cout << "The CPU wins!" << endl; 
     }
 }
 
