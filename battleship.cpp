@@ -35,6 +35,8 @@ void Battleship::startGame(int numPlayers, bool loadP1ShipFile, bool loadP2ShipF
     p1ShipCount = 5;
     p2ShipCount = 5;
     isFinished = false;
+    p1Win = false;
+    p2Win = false;
 
     for (int i = 0; i < 10; i++) {
         p1Board[i] = new char[10];
@@ -467,17 +469,14 @@ void Battleship::shoot(char charX, int y) {
 
     // If all the ships have sunk.
     if (currShipCount == 0) {
-        isFinished = true;
-        this->showBoard();
-        // Display a suitable message.
-        if (numPlayers == 1) {
-            cout << "All of the CPU's ships have sunk." << endl;
-            cout << "You win!" << endl;
-        } else {
-            // Display a message with the opponent's player number.
-            int enemyPlayer = (currPlayer == 1) ? 2 : 1;
-            cout << "All of Player " << enemyPlayer << "'s ships have sunk." << endl;
-            cout << "Player " << currPlayer << " wins!" << endl;
+        // Change the win status of the player.
+        switch (currPlayer) {
+            case 2:
+                p2Win = true;
+                break;
+            case 1:
+                p1Win = true;
+                break;
         }
     }
 

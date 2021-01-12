@@ -14,7 +14,10 @@ class Battleship {
         virtual ~Battleship(); // Virtual ensures subclass deconstructor runs as well.
         void startGame(int numPlayers, bool loadP1ShipFile, bool loadP2ShipFile);
         void showBoard();
+        void setGameFinished(bool status) { isFinished = status; }
         void shoot(char charX, int y);
+        bool isP1Win() { return p1Win; }
+        bool isP2Win() { return p2Win; }
         bool isGameFinished() { return isFinished; }
         int getNumPlayers() { return numPlayers; }
         int getCurrPlayer() { return currPlayer; }
@@ -22,6 +25,8 @@ class Battleship {
         static const char emptySpace = '-'; // static makes it useable in switch, case.
         int numPlayers;
         int currPlayer;
+        bool p1Win;
+        bool p2Win;
         bool isFinished;
 
         char** p1Board;

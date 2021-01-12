@@ -7,6 +7,7 @@ using namespace std;
 void setNumPlayers(int&);
 void setFileOptions(int, bool&, bool&);
 void runGame(Battleship*);
+void checkGameStatus(Battleship*);
 void playAgain(void);
 
 // DRIVER CODE.
@@ -87,7 +88,7 @@ void setNumPlayers(int &numPlayers) {
                     validNumPlayers = true;
                     break;
                 default:
-                    throw logic_error("Too many players, it must be 1 or 2.");
+                    throw logic_error("Too many players, it must be either 1 or 2.");
             }
         } catch (logic_error e) {
             cout << "Error: " << e.what() << endl;
@@ -143,73 +144,115 @@ void setFileOptions(int numPlayers, bool &loadP1ShipFile, bool &loadP2ShipFile) 
 void runGame(Battleship* myGame) {
     // Runs until all the ships have sunk for one side.
     while (!myGame->isGameFinished()) {
-        // Display text depending on the player turn and number of players.
-        if (myGame->getNumPlayers() == 2) {
-            if (myGame->getCurrPlayer() == 1) {
-                cout << endl << "-----------------------P1 Turn----------------------" << endl;
+        for (int currPlayer = 1; currPlayer <= myGame->getNumPlayers(); currPlayer++) {
+            // Display text depending on the player turn and number of players.
+            if (myGame->getNumPlayers() == 2) {
+                if (currPlayer == 1) {
+                    cout << endl << "-----------------------P1 Turn----------------------" << endl;
+                } else {
+                    cout << endl << "-----------------------P2 Turn----------------------" << endl;
+                }
             } else {
-                cout << endl << "-----------------------P2 Turn----------------------" << endl;
-            }
-        } else {
-            cout << endl << "----------------------Your Turn---------------------" << endl;
-        }
-        
-        myGame->showBoard();
-
-        // Get co-ordinates, then seperate them.
-        string xy;
-        cout << "Enter the co-ordinates (e.g. A1): ";
-        getline(cin, xy);
-
-        char x;
-        string strY;
-
-        try {
-            // Check the length.
-            switch (xy.length()) {
-                case 3:
-                    strY = xy.substr(1,2);
-                    break;
-                case 2:
-                    strY = xy.substr(1,1);
-                    break;
-                default:
-                    throw logic_error("Invalid co-ordinate length.");
+                cout << endl << "----------------------Your Turn---------------------" << endl;
             }
             
-            // Set x here (it's possible to input nothing).
-            x = xy[0];
+            myGame->showBoard();
 
-            // Check if x is in range.
-            if (x < 'A' || x > 'J') {
-                throw logic_error("The x-coordinate is out of range. Enter between A and J.");
-            }
+            // Get co-ordinates, then seperate them.
+            string xy;
+            cout << "Enter the co-ordinates (e.g. A1): ";
+            getline(cin, xy);
 
-            // Check if the y-coordinates are integers.
-            for (char letter : strY) {
-                if (letter < '0' || letter > '9') {
-                    throw logic_error("The y-coordinate must be in numbers.");
+            char x;
+            string strY;
+
+            try {
+                // Check the length.
+                switch (xy.length()) {
+                    case 3:
+                        strY = xy.substr(1,2);
+                        break;
+                    case 2:
+                        strY = xy.substr(1,1);
+                        break;
+                    default:
+                        throw logic_error("Invalid co-ordinate length.");
                 }
-            }
+                
+                // Set x here (it's possible to input nothing).
+                x = xy[0];
 
-            // Convert y-coordinates to an integer, then check the range.
-            int y = stoi(strY);
-            if (y < 1 || y > 10) {
-                throw logic_error("The y-coordinate is out of range. Enter between 1 and 10.");
-            }
+                // Check if x is in range.
+                if (x < 'A' || x > 'J') {
+                    throw logic_error("The x-coordinate is out of range. Enter between A and J.");
+                }
 
-            myGame->shoot(x, y);
-            // Run the CPU's turn if it's single player.
-            if (myGame->getNumPlayers() == 1 && !myGame->isGameFinished()) {
-                cout << endl << "---------------------CPU's Turn---------------------" << endl;
-                static_cast<BattleshipCPU*>(myGame)->cpuShoot();
+                // Check if the y-coordinates are integers.
+                for (char letter : strY) {
+                    if (letter < '0' || letter > '9') {
+                        throw logic_error("The y-coordinate must be in numbers.");
+                    }
+                }
+
+                // Convert y-coordinates to an integer, then check the range.
+                int y = stoi(strY);
+                if (y < 1 || y > 10) {
+                    throw logic_error("The y-coordinate is out of range. Enter between 1 and 10.");
+                }
+
+                myGame->shoot(x, y);
+                // Run the CPU's turn if it's single player.
+                if (myGame->getNumPlayers() == 1 && !myGame->isGameFinished()) {
+                    cout << endl << "---------------------CPU's Turn---------------------" << endl;
+                    static_cast<BattleshipCPU*>(myGame)->cpuShoot();
+                }
+            } catch (logic_error e) {
+                cout << "Error: " << e.what() << endl;
             }
-        } catch (logic_error e) {
-            cout << "Error: " << e.what() << endl;
         }
+        // Check the game's status after both player's turns.
+        checkGameStatus(myGame);
     }
     // Delete the game object after game completion.
     delete myGame;
+}
+
+// Check the game's status after both players have taken their turn.
+void checkGameStatus(Battleship* myGame) {
+    // Ajust the game status if a player has won.
+    // The CPU is treated as Player 2.
+    if (myGame->isP1Win() || myGame->isP2Win()) {
+        cout << endl << "-------------------Game Completed-------------------" << endl;
+        myGame->showBoard();
+        myGame->setGameFinished(true);
+
+        // Show a message based on the game's outcome.
+        switch (myGame->getNumPlayers()) {
+            case 2:
+                if (myGame->isP1Win() && myGame->isP2Win()) {
+                    cout << "All of Player 1's and Player 2's ships have sunk." << endl;
+                    cout << "Draw!" << endl;
+                } else {
+                    int winnerNum = myGame->isP1Win() ? 1 : 2;
+                    int loserNum = myGame->isP1Win() ? 2 : 1;
+                    cout << "All of Player " << loserNum << "'s ships have sunk." << endl;
+                    cout << "Player " << winnerNum << " wins!" << endl;
+                }
+                break;
+            case 1:
+                if (myGame->isP1Win() && myGame->isP2Win()) {
+                    cout << "All of your ships and the CPU's ships have sunk." << endl;
+                    cout << "Draw!" << endl;
+                } else if (myGame->isP1Win()) {
+                    cout << "All of the CPU's ships have sunk." << endl;
+                    cout << "You win!" << endl;
+                } else if (myGame->isP2Win()) {
+                    cout << "All your ships have sunk." << endl;
+                    cout << "The CPU wins!" << endl; 
+                }
+                break;
+        }
+    }
 }
 
 // Asks if the player wants to play again.

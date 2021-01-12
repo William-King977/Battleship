@@ -105,10 +105,7 @@ void BattleshipCPU::cpuShoot() {
 
     // If all the ships have sunk.
     if (p1ShipCount == 0) {
-        isFinished = true;
-        this->showBoard();
-        cout << "All your ships have sunk." << endl;
-        cout << "The CPU wins!" << endl; 
+        p2Win = true;
     }
 }
 
