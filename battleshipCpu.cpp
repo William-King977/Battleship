@@ -100,7 +100,7 @@ void BattleshipCPU::cpuShoot() {
         }
     }
 
-    // Show the number of ships remaining.
+    // Show the number of ships sunk.
     cout << "Ships Sunk: " << (5 - p1ShipCount) << endl;
 
     // If all the ships have sunk.

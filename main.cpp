@@ -146,14 +146,13 @@ void runGame(Battleship* myGame) {
     while (!myGame->isGameFinished()) {
         for (int currPlayer = 1; currPlayer <= myGame->getNumPlayers(); currPlayer++) {
             // Display text depending on the player turn and number of players.
-            if (myGame->getNumPlayers() == 2) {
-                if (currPlayer == 1) {
-                    cout << endl << "-----------------------P1 Turn----------------------" << endl;
-                } else {
-                    cout << endl << "-----------------------P2 Turn----------------------" << endl;
-                }
-            } else {
-                cout << endl << "----------------------Your Turn---------------------" << endl;
+            switch (myGame->getNumPlayers()) {
+                case 2:
+                    cout << endl << "-----------------------P" << currPlayer << " Turn----------------------" << endl;
+                    break;
+                case 1:
+                    cout << endl << "----------------------Your Turn---------------------" << endl;
+                    break;
             }
             
             myGame->showBoard();
@@ -180,7 +179,7 @@ void runGame(Battleship* myGame) {
                 }
                 
                 // Set x here (it's possible to input nothing).
-                x = xy[0];
+                x = toupper(xy[0]);
 
                 // Check if x is in range.
                 if (x < 'A' || x > 'J') {

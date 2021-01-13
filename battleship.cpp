@@ -464,10 +464,10 @@ void Battleship::shoot(char charX, int y) {
         }
     }
 
-    // Show the number of ships remaining.
+    // Show the number of ships sunk.
     cout << "Ships Sunk: " << (5 - currShipCount) << endl;
 
-    // If all the ships have sunk.
+    // If all the opponent's ships have sunk.
     if (currShipCount == 0) {
         // Change the win status of the player.
         switch (currPlayer) {
@@ -504,7 +504,7 @@ void Battleship::showBoard() {
     cout << endl << "P1   A B C D E F G H I J  |" << enemyName << "A B C D E F G H I J" << endl;
     cout << "   ---------------------  |" << "    ---------------------" << endl;
     for (int i = 0; i < 10; i++) {
-        // Print line of the first board.
+        // Print the line of the first board.
         for (int j = 0; j < 10; j++) {
             // Show P1's ships if it's hit or if it's a single player game.
             char currPiece = ((numPlayers == 1) || isPosHit(p1Board[i][j])) ? p1Board[i][j] : emptySpace;
@@ -518,7 +518,7 @@ void Battleship::showBoard() {
             }
         }
 
-        // Print line of the second board.
+        // Print the line of the second board.
         for (int j = 0; j < 10; j++) {
             // Hide the opponents ships if they're not hit.
             char currPiece = isPosHit(p2Board[i][j]) ? p2Board[i][j] : emptySpace;
