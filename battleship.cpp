@@ -56,7 +56,7 @@ void Battleship::startGame(int numPlayers, bool loadP1ShipFile, bool loadP2ShipF
 
     // Set the ship placements for Player 1.
     if (loadP1ShipFile) {
-        getShipsFromFile("bounds test.txt", p1Board);
+        getShipsFromFile("P1 Board.txt", p1Board);
     } else {
         placeShips(p1Board);
     }
