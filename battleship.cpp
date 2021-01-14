@@ -47,21 +47,21 @@ void Battleship::startGame(int numPlayers, bool loadP1ShipFile, bool loadP2ShipF
         }
     }
 
-    // Placing the seed here ensures that both board are random.
+    // Placing the seed here ensures that both boards are random.
     srand(time(NULL));
 
     // Set data for the ships.
     setShipData(p1Ships);
     setShipData(p2Ships);
 
-    // Set the ship placements for player one.
+    // Set the ship placements for Player 1.
     if (loadP1ShipFile) {
-        getShipsFromFile("P1 Board.txt", p1Board);
+        getShipsFromFile("bounds test.txt", p1Board);
     } else {
         placeShips(p1Board);
     }
 
-    // Set ship placements for player two.
+    // Set ship placements for Player 2.
     if (loadP2ShipFile) {
         getShipsFromFile("P2 Board.txt", p2Board);
     } else {
@@ -189,6 +189,11 @@ bool Battleship::isShipPlacementValid(char** board) {
             if (visitedPos.find(shipType) == visitedPos.end()) {
                 vector<Coordinate> newShipPos(1, Coordinate(j, i));
                 visitedPos[shipType] = newShipPos;
+                // Check if the ship has been placed correctly.
+                // NOTE: the remainder of the ship's positions will be added to the vector.
+                if (!isShipValid(board, visitedPos[shipType], shipType, shipLength)) {
+                    return false;
+                }
             } else {
                 bool isShipSame = false;
                 vector<Coordinate> existShipPos = visitedPos[shipType];
@@ -203,14 +208,7 @@ bool Battleship::isShipPlacementValid(char** board) {
                 // If it isn't, then the user has placed two of the same ship...
                 if (!isShipSame) {
                     return false;
-                } else {
-                    continue;
                 }
-            }
-
-            // Check if the ship has been placed correctly.
-            if (!isShipValid(board, visitedPos[shipType], shipType, shipLength)) {
-                return false;
             }
         }
     }

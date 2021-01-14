@@ -61,9 +61,7 @@ void setNumPlayers(int &numPlayers) {
             // Check the length.
             if (strNumPlayers.length() > 1) {
                 throw logic_error("Invalid input, please enter a single digit.");
-            }
-            
-            if (strNumPlayers.length() == 0) {
+            } else if (strNumPlayers.length() == 0) {
                 throw logic_error("No option entered.");
             }
 
@@ -100,19 +98,19 @@ void setNumPlayers(int &numPlayers) {
 void setFileOptions(int numPlayers, bool &loadP1ShipFile, bool &loadP2ShipFile) {
     string shipOption;
     bool shipFromFile;
-    for (int i = 0; i < numPlayers; i++) {
+    for (int currPlayer = 1; currPlayer <= numPlayers; currPlayer++) {
         bool validOption = false;
+        // Putting it in a seperate loop prevents asking BOTH users again
+        // when an invalid option is entered.
         while (!validOption) {
-            cout << "Load pre-positioned ships for Player " << i + 1 << " (Y/N)? ";
+            cout << "Load pre-positioned ships for Player " << currPlayer << " (Y/N)? ";
             getline(cin, shipOption);
 
             try {
                 // Check input length.
                 if (shipOption.length() > 1) {
                     throw logic_error("Invalid option, input is too long.");
-                }
-
-                if (shipOption.length() == 0) {
+                } else if (shipOption.length() == 0) {
                     throw logic_error("No option entered.");
                 }
 
@@ -135,8 +133,8 @@ void setFileOptions(int numPlayers, bool &loadP1ShipFile, bool &loadP2ShipFile) 
                 cout << "Error: " << e.what() << endl;
             }
         }
-        loadP1ShipFile = (i == 0) ? shipFromFile : loadP1ShipFile;
-        loadP2ShipFile = (i == 1) ? shipFromFile : loadP2ShipFile;
+        loadP1ShipFile = (currPlayer == 1) ? shipFromFile : loadP1ShipFile;
+        loadP2ShipFile = (currPlayer == 2) ? shipFromFile : loadP2ShipFile;
     }
 }
 
@@ -168,11 +166,13 @@ void runGame(Battleship* myGame) {
             try {
                 // Check the length.
                 switch (xy.length()) {
+                    // If y is 10.
                     case 3:
                         strY = xy.substr(1,2);
                         break;
+                    // If y is between 1 and 9.
                     case 2:
-                        strY = xy.substr(1,1);
+                        strY = xy[1];
                         break;
                     default:
                         throw logic_error("Invalid co-ordinate length.");
@@ -201,7 +201,7 @@ void runGame(Battleship* myGame) {
 
                 myGame->shoot(x, y);
                 // Run the CPU's turn if it's single player.
-                if (myGame->getNumPlayers() == 1 && !myGame->isGameFinished()) {
+                if (myGame->getNumPlayers() == 1) {
                     cout << endl << "---------------------CPU's Turn---------------------" << endl;
                     static_cast<BattleshipCPU*>(myGame)->cpuShoot();
                 }
@@ -232,8 +232,8 @@ void checkGameStatus(Battleship* myGame) {
                     cout << "All of Player 1's and Player 2's ships have sunk." << endl;
                     cout << "Draw!" << endl;
                 } else {
-                    int winnerNum = myGame->isP1Win() ? 1 : 2;
-                    int loserNum = myGame->isP1Win() ? 2 : 1;
+                    char winnerNum = myGame->isP1Win() ? '1' : '2';
+                    char loserNum = myGame->isP1Win() ? '2' : '1';
                     cout << "All of Player " << loserNum << "'s ships have sunk." << endl;
                     cout << "Player " << winnerNum << " wins!" << endl;
                 }
@@ -264,9 +264,7 @@ void playAgain(void) {
         // Check input length.
         if (option.length() > 1) {
             throw logic_error("Invalid option, input is too long.");
-        }
-
-        if (option.length() == 0) {
+        } else if (option.length() == 0) {
             throw logic_error("No option entered.");
         }
 

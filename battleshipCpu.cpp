@@ -129,10 +129,6 @@ void BattleshipCPU::calculateProbability() {
                 }
 
                 int shipLength = elem.second.getLength();
-                int upSize = 1;
-                int downSize = 1;
-                int leftSize = 1;
-                int rightSize = 1;
                 bool upInBound = true;
                 bool downInBound = true;
                 bool leftInBound = true;
@@ -145,34 +141,22 @@ void BattleshipCPU::calculateProbability() {
                     int leftPos = j - k;
                     int rightPos = j + k;
 
-                    // UP
-                    if (upPos >= 0 && !isPosHit(p1Board[upPos][j]) && upInBound) {
-                        upSize++;
-                    } else {
+                    // UP.
+                    if (upPos < 0 || isPosHit(p1Board[upPos][j])) {
                         upInBound = false;
                     }
-
                     // DOWN
-                    if (downPos <= 9 && !isPosHit(p1Board[downPos][j]) && downInBound) {
-                        downSize++;
-                    } else {
+                    if (downPos > 9 || isPosHit(p1Board[downPos][j])) {
                         downInBound = false;
                     }
-
                     // LEFT
-                    if (leftPos >= 0 && !isPosHit(p1Board[i][leftPos]) && leftInBound) {
-                        leftSize++;
-                    } else {
+                    if (leftPos < 0 || isPosHit(p1Board[i][leftPos])) {
                         leftInBound = false;
                     }
-
                     // RIGHT
-                    if (rightPos <= 9 && !isPosHit(p1Board[i][rightPos]) && rightInBound) {
-                        rightSize++;
-                    } else {
+                    if (rightPos > 9 || isPosHit(p1Board[i][rightPos])) {
                         rightInBound = false;
                     }
-
                     // Exit early if possible.
                     if (!upInBound && !downInBound && !leftInBound && !rightInBound) {
                         break;
@@ -180,16 +164,16 @@ void BattleshipCPU::calculateProbability() {
                 }
 
                 // Increment where appropriate.
-                if (upSize == shipLength) {
+                if (upInBound) {
                     probBoard[i][j]++;
                 }
-                if (downSize == shipLength) {
+                if (downInBound) {
                     probBoard[i][j]++;
                 }
-                if (leftSize == shipLength) {
+                if (leftInBound) {
                     probBoard[i][j]++;
                 }
-                if (rightSize == shipLength) {
+                if (rightInBound) {
                     probBoard[i][j]++;
                 }
             }
@@ -449,7 +433,7 @@ void BattleshipCPU::setAltMoves(Direction dir, Coordinate prevShipMove) {
 
     // Only consider ships with length 3 or more (A patrol boat would've been sunk already).
     switch (dir) {
-        // If you went Up, go back Down.
+        // If you went Up, go Down.
         case UP:
             // Based on the ship's remaining health (it has been hit at least TWICE).
             switch (prevShipHit.getHealth()) {
@@ -461,7 +445,7 @@ void BattleshipCPU::setAltMoves(Direction dir, Coordinate prevShipMove) {
                     currMoves.push(Coordinate(x, y + timesHit));
             }
             break;
-        // If you went Down, go back Up.
+        // If you went Down, go Up.
         case DOWN:
             switch (prevShipHit.getHealth()) {
                 case 3:
