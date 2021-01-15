@@ -324,7 +324,7 @@ void Battleship::placeShips(char** board) {
         // Stores the possible placements in the co-ordinate.
         vector<Direction> validDir = getValidDirections(x, y, shipLength, board);
         
-        // If it's impossible to place the (whole) ship.
+        // If it's impossible to place the (whole) ship, then try and place it again.
         if (validDir.size() == 0) {
             i++;
             continue;
@@ -497,20 +497,29 @@ bool Battleship::isPosHit(char boardPiece) {
 
 // Show the current contents of the boards.
 void Battleship::showBoard() {
-    string enemyName = (numPlayers == 1) ? " CPU  " : " P2   ";
+    switch (numPlayers) {
+        case 2:
+            cout << endl << "P1   A B C D E F G H I J   |  P2   A B C D E F G H I J" << endl;
+            break;
+        case 1:
+            cout << endl << "You  A B C D E F G H I J   |  CPU  A B C D E F G H I J" << endl;
+            break;
+    }
+    cout << "   ---------------------   |" << "     ---------------------" << endl;
 
-    cout << endl << "P1   A B C D E F G H I J  |" << enemyName << "A B C D E F G H I J" << endl;
-    cout << "   ---------------------  |" << "    ---------------------" << endl;
     for (int i = 0; i < 10; i++) {
         // Print the line of the first board.
         for (int j = 0; j < 10; j++) {
             // Show P1's ships if it's hit or if it's a single player game.
             char currPiece = ((numPlayers == 1) || isPosHit(p1Board[i][j])) ? p1Board[i][j] : emptySpace;
             
+            // If it's the start and the 10th row.
             if (j == 0 && i == 9) {
                 cout << i + 1 << " | " << currPiece << ' ';
+            // Any other starting row.
             } else if (j == 0) {
                 cout << ' ' << i + 1 << " | " << currPiece << ' ';
+            // All other pieces in the row.
             } else {
                 cout << currPiece << ' ';
             }
@@ -522,9 +531,9 @@ void Battleship::showBoard() {
             char currPiece = isPosHit(p2Board[i][j]) ? p2Board[i][j] : emptySpace;
             
             if (j == 0 && i == 9) {
-                cout << " | " << i + 1 << " | " << currPiece << ' ';
+                cout << "  |  " << i + 1 << " | " << currPiece << ' ';
             } else if (j == 0) {
-                cout << " |  " << i + 1 << " | " << currPiece << ' ';
+                cout << "  |   " << i + 1 << " | " << currPiece << ' ';
             } else {
                 cout << currPiece << ' ';
             }

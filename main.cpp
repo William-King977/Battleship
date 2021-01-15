@@ -12,7 +12,7 @@ void playAgain(void);
 
 // DRIVER CODE.
 int main(void) {
-    cout << "----------------------Battleship--------------------" << endl;
+    cout << "-----------------------Battleship---------------------" << endl;
     
     // Ask for the number of players.
     int numPlayers;
@@ -146,10 +146,10 @@ void runGame(Battleship* myGame) {
             // Display text depending on the player turn and number of players.
             switch (myGame->getNumPlayers()) {
                 case 2:
-                    cout << endl << "-----------------------P" << currPlayer << " Turn----------------------" << endl;
+                    cout << endl << "------------------------P" << currPlayer << " Turn-----------------------" << endl;
                     break;
                 case 1:
-                    cout << endl << "----------------------Your Turn---------------------" << endl;
+                    cout << endl << "-----------------------Your Turn----------------------" << endl;
                     break;
             }
             
@@ -202,7 +202,7 @@ void runGame(Battleship* myGame) {
                 myGame->shoot(x, y);
                 // Run the CPU's turn if it's single player.
                 if (myGame->getNumPlayers() == 1) {
-                    cout << endl << "---------------------CPU's Turn---------------------" << endl;
+                    cout << endl << "----------------------CPU's Turn----------------------" << endl;
                     static_cast<BattleshipCPU*>(myGame)->cpuShoot();
                 }
             } catch (logic_error e) {
@@ -221,7 +221,7 @@ void checkGameStatus(Battleship* myGame) {
     // Ajust the game status if a player has won.
     // The CPU is treated as Player 2.
     if (myGame->isP1Win() || myGame->isP2Win()) {
-        cout << endl << "-------------------Game Completed-------------------" << endl;
+        cout << endl << "-----------------------Game Over----------------------" << endl;
         myGame->showBoard();
         myGame->setGameFinished(true);
 

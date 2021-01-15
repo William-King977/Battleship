@@ -524,14 +524,13 @@ Direction BattleshipCPU::getDirection(Coordinate first, Coordinate last) {
 bool BattleshipCPU::canShipExist(int shipLength, Coordinate currPos, Direction dir) {
     bool upperInBounds = true;
     bool lowerInBounds = true;
-    int upperBound;
-    int lowerBound;
+    // Initialise them with Y if it's vertical, otherwise X.
+    int upperBound = (dir == UP || dir == DOWN) ? currPos.getY() : currPos.getX();
+    int lowerBound = (dir == UP || dir == DOWN) ? currPos.getY() : currPos.getX();
     
     switch (dir) {
         case UP:
         case DOWN:
-            upperBound = currPos.getY();
-            lowerBound = currPos.getY();
             for (int i = 1; i < shipLength; i++) {
                 int upPos = currPos.getY() - i;
                 int downPos = currPos.getY() + i;
@@ -552,8 +551,6 @@ bool BattleshipCPU::canShipExist(int shipLength, Coordinate currPos, Direction d
             break;
         case LEFT:
         case RIGHT:
-            upperBound = currPos.getX();
-            lowerBound = currPos.getX();
             for (int i = 1; i < shipLength; i++) {
                 int leftPos = currPos.getX() - i;
                 int rightPos = currPos.getX() + i;
@@ -573,7 +570,7 @@ bool BattleshipCPU::canShipExist(int shipLength, Coordinate currPos, Direction d
             }
             break;
     }
-    int innerBound = upperBound - lowerBound;
-    bool placementPossible = (innerBound + 1) >= shipLength ? true : false;
+    int innerBound = (upperBound - lowerBound) + 1;
+    bool placementPossible = (innerBound) >= shipLength ? true : false;
     return placementPossible;
 }
