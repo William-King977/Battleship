@@ -206,6 +206,7 @@ void runGame(Battleship* myGame) {
                     static_cast<BattleshipCPU*>(myGame)->cpuShoot();
                 }
             } catch (logic_error e) {
+                currPlayer--; // It will run the FOR loop again.
                 cout << "Error: " << e.what() << endl;
             }
         }
