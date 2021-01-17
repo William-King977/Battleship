@@ -1,5 +1,5 @@
 # About
-A battleship game using text-based representation. Based on the guessing game of the same name.
+A battleship game using text-based representation. The rules and ship names follow the Hasbro version.
 
 # Notes About The Implementation
 - Everything is coded in Visual Studio Code.
@@ -13,4 +13,7 @@ A battleship game using text-based representation. Based on the guessing game of
 - Single player against the CPU.
 - Two player with another person (taking turns on same Terminal).
 - Both options allow imports of pre-positioned ship textfiles for Player 1 and/or Player 2 (not for CPU).
+
+# Video Demonstration
+A demo video that demonstrates all of the features: https://youtu.be/UizT4RTeHxs
 
