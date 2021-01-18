@@ -1,4 +1,4 @@
-#include "ship.hpp"
+#include "../include/ship.hpp"
 
 // Constructor with no parameters.
 Ship::Ship() {

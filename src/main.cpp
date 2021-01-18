@@ -1,5 +1,5 @@
-#include "battleship.hpp"
-#include "battleshipCPU.hpp"
+#include "../include/battleship.hpp"
+#include "../include/battleshipCPU.hpp"
 #include <iostream>
 #include <exception>
 using namespace std;

@@ -1,4 +1,4 @@
-#include "battleship.hpp"
+#include "../include/battleship.hpp"
 #include <iostream>
 #include <fstream>
 #include <sys/stat.h>

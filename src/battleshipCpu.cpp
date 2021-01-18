@@ -1,4 +1,4 @@
-#include "battleshipCpu.hpp"
+#include "../include/battleshipCpu.hpp"
 #include <iostream>
 using namespace std;
 
