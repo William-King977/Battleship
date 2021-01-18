@@ -71,7 +71,7 @@ void Battleship::startGame(int numPlayers, bool loadP1ShipFile, bool loadP2ShipF
 
 // Reads the ships from the specified file.
 void Battleship::getShipsFromFile(string fileName, char** currBoard) {
-    const string boardDir = "boards/" + fileName;
+    const string boardDir = "../boards/" + fileName;
     ifstream boardFile(boardDir);
 
     // Checks if it exists.
